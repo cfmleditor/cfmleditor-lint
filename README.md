@@ -1,7 +1,7 @@
 # VS Code CFLint
 
-[![VS Marketplace](https://vsmarketplacebadge.apphb.com/version-short/KamasamaK.vscode-cflint.svg)](https://marketplace.visualstudio.com/items?itemName=KamasamaK.vscode-cflint)
-[![Open VSX](https://img.shields.io/open-vsx/v/KamasamaK/vscode-cflint)](https://open-vsx.org/extension/KamasamaK/vscode-cflint)
+
+[![Open VSX](https://img.shields.io/open-vsx/v/cfmleditor/cfmleditor-lint)](https://open-vsx.org/extension/cfmleditor/cfmleditor-lint)
 [![cfml](https://img.shields.io/badge/cfml-ide-blue.svg?logo=slack&labelColor=555555)](https://cfml-slack.herokuapp.com)
 
 **CFLint** is a linter for CFML and you can find more information at its [GitHub repository](https://github.com/cflint/CFLint). This extension integrates **CFLint** into VS Code.
@@ -43,7 +43,7 @@ You must first install **CFLint**. You may skip the steps below if you already h
 
 ### Extension dependencies
 
-Requires an extension that contributes the language since linting is only done for particular language IDs. The recommended one is **[KamasamaK.vscode-cfml](https://marketplace.visualstudio.com/items?itemName=KamasamaK.vscode-cfml)**.
+Requires an extension that contributes the language since linting is only done for particular language IDs. The recommended one is **[cfmleditor.cfmleditor](https://marketplace.visualstudio.com/items?itemName=cfmleditor.cfmleditor)**.
 
 ## Settings
 
@@ -68,7 +68,7 @@ The following are the configurable Settings (`Ctrl`+`Comma`) that this extension
 - `cflint.linterCooldown`: The minimum number of milliseconds to wait between running the linter on a document. [*Default*: `5000`]
 - `cflint.maxSimultaneousLints`: The maximum number of simultaneously running lints. Any exceeding this number will be queued. [*Default*: `3`]
 - `cflint.ignoreInfo`: Whether to ignore issues with Info severity as problems. [*Default*: `false`]
-- `cflint.ignoreWarnings`: Whether to ignore issues with Warning severity as problems. [*Default*: `false`]
+- `cflint.ignoreWarnings`: Whether to ignore issues with Warnin`g severity as problems. [*Default*: `false`]
 - `cflint.notify.latestVersion`: Whether to notify when there is a newer version available. [*Default*: `true`]
 
 ## Commands
@@ -125,4 +125,4 @@ See [CONTRIBUTING.md](/CONTRIBUTING.md)
 
 ## Support
 
-For questions or help, join the `#ide` channel in the [CFML Slack workspace](https://cfml-slack.herokuapp.com/) to talk with people about this or other editor tools. To file a bug or feature request, open a [GitHub issue](https://github.com/KamasamaK/vscode-cflint/issues).
+For questions or help, join the `#ide` channel in the [CFML Slack workspace](https://cfml-slack.herokuapp.com/) to talk with people about this or other editor tools. To file a bug or feature request, open a [GitHub issue](https://github.com/cfmleditor/cfmleditor-lint/issues).

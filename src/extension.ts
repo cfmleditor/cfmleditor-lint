@@ -800,6 +800,8 @@ function initializeSettings(): void {
  * @param context The context object for this extension.
  */
 export async function activate(context: ExtensionContext): Promise<void> {
+
+
     console.log(`[${getCurrentDateTimeFormatted()}] cflint is active!`);
 
     minimumTypingDelay = context.extension.packageJSON.contributes.configuration.properties["cflint.typingDelay"].minimum;
@@ -856,15 +858,25 @@ export async function activate(context: ExtensionContext): Promise<void> {
         outputLintDocument(editor.document, OutputFormat.Xml);
     }));
 
-    const cfmlExt = extensions.getExtension("KamasamaK.vscode-cfml");
+    let cfmlExt = extensions.getExtension("cfmleditor.cfmleditor");
+
+    if ( !cfmlExt ) {
+        cfmlExt = extensions.getExtension("KamasamaK.vscode-cfml");
+    }
+
     if (cfmlExt && !cfmlExt.isActive) {
         await cfmlExt.activate();
     }
 
     try {
-        cfmlApi = cfmlExt.exports.getAPI(0);
+        if ( cfmlApi && cfmlExt.exports ) {
+            cfmlApi = cfmlExt.exports.getAPI(0);
+        } else {
+            cfmlApi = null;
+        }
     } catch (err) {
-        console.error(err);
+        cfmlApi = null;
+        //console.error(err);
     }
 
     // TODO: Add command for running linter for all opened CFML files. Needs refactoring. Needs API for opened editors.
@@ -880,7 +892,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
             return;
         }
 
-        if (cfmlApi?.isBulkCaching()) {
+        if (cfmlApi && cfmlApi?.isBulkCaching()) {
             return;
         }
 

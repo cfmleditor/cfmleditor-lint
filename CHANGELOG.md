@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the VS Code CFLint extension will be documented in this file.
+All notable changes to the VS Code cfmleditor-lint extension will be documented in this file.
 
 ## [0.3.6] - 2022-04-16
 
