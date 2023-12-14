@@ -2,7 +2,7 @@
     "name": "cfmleditor-lint",
     "displayName": "CFML Editor Linter",
     "description": "CFML Editor Linter for Visual Studio Code",
-    "version": "0.4.0",
+    "version": "0.4.1",
     "author": "cfmleditor",
     "publisher": "cfmleditor",
     "license": "MIT",
@@ -24,7 +24,7 @@
         "cfml",
         "cflint"
     ],
-    "icon": "images/icon.png",
+    "icon": "images/icon2x.png",
     "activationEvents": [
         "onLanguage:cfml",
         "workspaceContains:**/*.cfm",
