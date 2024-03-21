@@ -6,10 +6,9 @@ export const CFLINT_DIAGNOSTIC_SOURCE = "cflint";
 
 /**
  * Takes an issue object representing a single issue and create a Diagnostic object from it.
- *
  * @param document The document in which the issues exists
  * @param issue Expected to be in the format returned by CFLint's JSON output.
- * @return A Diagnostic object corresponding to the issue.
+ * @returns A Diagnostic object corresponding to the issue.
  */
 export function createDiagnostics(document: TextDocument, issue: CFLintIssueList): Diagnostic[] {
     const diagnosticArr: Diagnostic[] = [];
@@ -50,10 +49,9 @@ export function createDiagnostics(document: TextDocument, issue: CFLintIssueList
 
 /**
  * Takes a CFLintIssue and makes a Diagnostic from it.
- *
  * @param document The document in which the issue exists
  * @param issue The issue structured as a CFLintIssue.
- * @return A Diagnostic object corresponding to the problem.
+ * @returns A Diagnostic object corresponding to the problem.
  */
 function makeDiagnostic(document: TextDocument, issue: CFLintIssue): Diagnostic {
     // Ensure that the start and end are >=0
@@ -83,9 +81,8 @@ function makeDiagnostic(document: TextDocument, issue: CFLintIssue): Diagnostic 
 
 /**
  * Takes a CFLint issue severity and gets its corresponding DiagnosticSeverity.
- *
  * @param issueSeverity The CFLint issue severity.
- * @return A DiagnosticSeverity object corresponding to the issue.
+ * @returns A DiagnosticSeverity object corresponding to the issue.
  */
 function getDiagnosticSeverity(issueSeverity: string): DiagnosticSeverity {
     let problemSeverity: DiagnosticSeverity;

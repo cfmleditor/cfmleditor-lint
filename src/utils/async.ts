@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-magic-numbers, spaced-comment, @typescript-eslint/consistent-type-assertions, @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type */
 
 /*
@@ -1354,6 +1355,7 @@ export class DeferredPromise<T> {
 
 //#region Promises
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Promises {
 
     /**
@@ -1533,6 +1535,7 @@ export class AsyncIterableObject<T> implements AsyncIterable<T> {
                         return { done: true, value: undefined };
                     }
                     await Event.toPromise(this._onStateChanged.event);
+                // eslint-disable-next-line no-constant-condition
                 } while (true);
             }
         };

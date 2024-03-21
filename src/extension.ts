@@ -79,9 +79,8 @@ let versionPrompted = false;
 
 /**
  * Checks whether the language id is compatible with CFML.
- *
  * @param languageId The VSCode language id to check.
- * @return Indication of whether the language id is compatible with CFML.
+ * @returns Indication of whether the language id is compatible with CFML.
  */
 function isCfmlLanguage(languageId: string): boolean {
     return LANGUAGE_IDS.includes(languageId);
@@ -115,8 +114,8 @@ async function disable(): Promise<void> {
 
 /**
  * Checks whether the linter is enabled.
- *
  * @param resource The Uri of the document to check against
+ * @returns
  */
 function isLinterEnabled(resource: Uri): boolean {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(resource);
@@ -125,8 +124,8 @@ function isLinterEnabled(resource: Uri): boolean {
 
 /**
  * Checks whether the given document matches the set of excluded globs.
- *
  * @param documentUri The URI of the document to check against
+ * @returns
  */
 function shouldExcludeDocument(documentUri: Uri): boolean {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(documentUri);
@@ -138,8 +137,8 @@ function shouldExcludeDocument(documentUri: Uri): boolean {
 
 /**
  * Checks whether the given document should be linted.
- *
  * @param document The document to check against
+ * @returns
  */
 function shouldLintDocument(document: TextDocument): boolean {
     return isLinterEnabled(document.uri)
@@ -151,6 +150,7 @@ function shouldLintDocument(document: TextDocument): boolean {
 /**
  * Checks whether the document is on cooldown.
  * @param document The TextDocument for which to check cooldown status
+ * @returns
  */
 function isOnCooldown(document: TextDocument): boolean {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(document.uri);
@@ -168,8 +168,8 @@ function isOnCooldown(document: TextDocument): boolean {
 
 /**
  * Retrieves VSCode settings for CFLint
- *
  * @param resource The Uri of the document to check against
+ * @returns
  */
 export function getCFLintSettings(resource: Uri = null): WorkspaceConfiguration {
     return workspace.getConfiguration(settingsSection, resource);
@@ -177,9 +177,8 @@ export function getCFLintSettings(resource: Uri = null): WorkspaceConfiguration 
 
 /**
  * Gets the proper Java bin name for the platform.
- *
  * @param binName The base name for the bin file
- * @return The Java bin name for the current platform.
+ * @returns The Java bin name for the current platform.
  */
 function correctJavaBinName(binName: string): string {
     if (process.platform === "win32") {
@@ -191,9 +190,8 @@ function correctJavaBinName(binName: string): string {
 
 /**
  * Gets the full path to the java executable to be used.
- *
  * @param resource The URI of the resource for which to check the path
- * @return The full path to the java executable.
+ * @returns The full path to the java executable.
  */
 async function findJavaExecutable(resource: Uri): Promise<string> {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(resource);
@@ -246,9 +244,8 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
 
 /**
  * Checks to see if cflint.jarPath resolves to a valid file path.
- *
  * @param resource The resource for which to check the settings
- * @return Whether the JAR path in settings is a valid path.
+ * @returns Whether the JAR path in settings is a valid path.
  */
 async function jarPathExists(resource: Uri): Promise<boolean> {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(resource);
@@ -268,9 +265,8 @@ async function jarPathExists(resource: Uri): Promise<boolean> {
 
 /**
  * Checks to see if cflint.outputDirectory resolves to a valid directory path.
- *
  * @param resource The resource for which to check the settings
- * @return Whether the output directory path in settings is a valid path.
+ * @returns Whether the output directory path in settings is a valid path.
  */
 async function outputPathExists(resource: Uri): Promise<boolean> {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(resource);
@@ -290,9 +286,8 @@ async function outputPathExists(resource: Uri): Promise<boolean> {
 
 /**
  * Checks if the given file URI is valid and exists
- *
  * @param fileUri The URI to check validity.
- * @return Empty string if valid, else an error message.
+ * @returns Empty string if valid, else an error message.
  */
 async function validateFileUri(fileUri: Uri): Promise<string> {
     try {
@@ -308,9 +303,8 @@ async function validateFileUri(fileUri: Uri): Promise<string> {
 
 /**
  * Checks if the given directory file URI is valid and exists
- *
  * @param directoryUri The URI to check validity.
- * @return Empty string if valid, else an error message.
+ * @returns Empty string if valid, else an error message.
  */
 async function validateDirectoryUri(directoryUri: Uri): Promise<string> {
     try {
@@ -424,7 +418,6 @@ function showInvalidOutputDirectoryMessage(resource: Uri): void {
 
 /**
  * Lints the given document.
- *
  * @param document The document being linted.
  */
 async function lintDocument(document: TextDocument): Promise<void> {
@@ -451,7 +444,6 @@ async function lintDocument(document: TextDocument): Promise<void> {
 
 /**
  * Lints the given document, outputting to Diagnostics.
- *
  * @param document The document being linted.
  */
 async function onLintDocument(document: TextDocument): Promise<void> {
@@ -522,7 +514,6 @@ async function onLintDocument(document: TextDocument): Promise<void> {
 
 /**
  * Lints the given document, outputting to a file.
- *
  * @param document The document being linted.
  * @param format The format of the output.
  */
@@ -637,7 +628,6 @@ async function notifyForMinimumVersion(): Promise<void> {
 
 /**
  * Checks for newer version of CFLint
- *
  * @param currentVersion The current version of CFLint being used
  */
 async function checkForLatestRelease(currentVersion: string): Promise<void> {
@@ -657,7 +647,6 @@ async function checkForLatestRelease(currentVersion: string): Promise<void> {
 
 /**
  * Displays a notification message informing of a newer version of CFLint
- *
  * @param tagName The Git tag name for the latest release of CFLint
  */
 async function notifyForLatestRelease(tagName: string): Promise<void> {
@@ -673,7 +662,6 @@ async function notifyForLatestRelease(tagName: string): Promise<void> {
 
 /**
  * Processes CFLint output into Diagnostics
- *
  * @param document Document being linted
  * @param output CFLint JSON output
  */
@@ -681,7 +669,7 @@ function cfLintResult(document: TextDocument, output: string): void {
     const parsedOutput = JSON.parse(output);
 
     if (!versionPrompted) {
-        if (!parsedOutput.hasOwnProperty("version") || lt(parsedOutput.version, minimumCFLintVersion)) {
+        if (!Object.prototype.hasOwnProperty.call(parsedOutput, "version") || lt(parsedOutput.version, minimumCFLintVersion)) {
             notifyForMinimumVersion();
         } else {
             checkForLatestRelease(parsedOutput.version);
@@ -700,9 +688,9 @@ function cfLintResult(document: TextDocument, output: string): void {
 
 /**
  * Opens a link that describes the rules.
- *
  * @param _ruleId An optional identifer/code for a particular CFLint rule.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function showRuleDocumentation(_ruleId?: string): Promise<void> {
     const cflintRulesFileName = "RULES.md";
     const cflintRulesUri = Uri.joinPath(extensionContext.extensionUri, "resources", cflintRulesFileName);
@@ -743,7 +731,6 @@ async function showCFLintReleases(): Promise<void> {
 
 /**
  * Displays or hides CFLint status bar item
- *
  * @param show If true, status bar item is shown, else it's hidden
  */
 function showStatusBarItem(show: boolean): void {
@@ -756,7 +743,6 @@ function showStatusBarItem(show: boolean): void {
 
 /**
  * Updates the CFLint state
- *
  * @param state enum representing the new state of CFLint
  */
 function updateState(state: State): void {
@@ -766,7 +752,6 @@ function updateState(state: State): void {
 
 /**
  * Updates CFLint status bar item based on current settings and state
- *
  * @param editor The active text editor
  */
 function updateStatusBarItem(editor: TextEditor): void {
@@ -796,7 +781,6 @@ function initializeSettings(): void {
 
 /**
  * This method is called when the extension is activated.
- *
  * @param context The context object for this extension.
  */
 export async function activate(context: ExtensionContext): Promise<void> {
