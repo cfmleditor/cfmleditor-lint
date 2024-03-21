@@ -1,7 +1,6 @@
 /**
  * Gets the current date as a formatted string
- *
- * @return Formatted date
+ * @returns Formatted date
  */
 function getCurrentDateFormatted(): string {
     const currDate = new Date();
@@ -17,9 +16,8 @@ function getCurrentDateFormatted(): string {
 
 /**
  * Gets the current time as a formatted string
- *
  * @param includeMilliseconds Whether to display milliseconds
- * @return Formatted time
+ * @returns Formatted time
  */
 function getCurrentTimeFormatted(includeMilliseconds = false): string {
     const currDate = new Date();
@@ -45,8 +43,7 @@ function getCurrentTimeFormatted(includeMilliseconds = false): string {
 
 /**
  * Gets the current datetime as a formatted string
- *
- * @return Formatted datetime
+ * @returns Formatted datetime
  */
 export function getCurrentDateTimeFormatted(): string {
     return getCurrentDateFormatted() + " " + getCurrentTimeFormatted();

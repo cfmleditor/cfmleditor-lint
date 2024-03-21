@@ -9,8 +9,8 @@ export interface AutoFix {
 
 /**
  * Construct a label for the config exclude rule autofix
- *
  * @param ruleCode The rule code being excluded
+ * @returns
  */
 export function constructConfigExcludeRuleLabel(ruleCode: string): string {
     return `Exclude rule "${ruleCode}" in .cflintrc`;
@@ -19,8 +19,8 @@ export function constructConfigExcludeRuleLabel(ruleCode: string): string {
 // Inline Rule Fix
 /**
  * Construct a label for the inline ignore rule autofix
- *
  * @param ruleCode The rule code being ignored
+ * @returns
  */
 export function constructInlineIgnoreRuleLabel(ruleCode: string): string {
     return `Ignore rule "${ruleCode}" for this line`;
@@ -28,9 +28,9 @@ export function constructInlineIgnoreRuleLabel(ruleCode: string): string {
 
 /**
  * Creates the ignore rule text for the given rules codes based on whether this is in a script context
- *
  * @param ruleCodes The rule codes to be ignored by this text
  * @param isScript Whether the ignore rule text in the script context
+ * @returns
  */
 function createInlineIgnoreRuleText(ruleCodes: string[], isScript: boolean): string {
     const createLineComment = (text: string, isScript: boolean): string => {
@@ -45,6 +45,7 @@ function createInlineIgnoreRuleText(ruleCodes: string[], isScript: boolean): str
  * @param document The document in which the fix will be applied
  * @param range The range for which the fix will be applied
  * @param ruleCode The rule code to be ignored
+ * @returns
  */
 function createInlineIgnoreRuleFix(document: TextDocument, range: Range, ruleCode: string): AutoFix {
     // TODO: Check for an existing ignored rule for this line
@@ -76,6 +77,7 @@ function createInlineIgnoreRuleFix(document: TextDocument, range: Range, ruleCod
  * @param document The document in which the fix will be applied
  * @param range The range for which the fix will be applied
  * @param ruleCode The rule code to be ignored
+ * @returns
  */
 export function createInlineIgnoreRuleEdit(document: TextDocument, range: Range, ruleCode: string): WorkspaceEdit {
     const autofix: AutoFix = createInlineIgnoreRuleFix(document, range, ruleCode);
@@ -91,6 +93,7 @@ export function createInlineIgnoreRuleEdit(document: TextDocument, range: Range,
  * @param document The document in which the word appears
  * @param range The range of the word
  * @param textCase The text case to use
+ * @returns
  */
 export function transformCaseRuleEdit(document: TextDocument, range: Range, textCase: string): WorkspaceEdit {
     const currentWord: string = document.getText(range);
@@ -106,6 +109,7 @@ export function transformCaseRuleEdit(document: TextDocument, range: Range, text
  * Creates workspace edit for var scoping a variable
  * @param document The document in which the variable is declared
  * @param range The range of the variable identifier
+ * @returns
  */
 export function varScopeEdit(document: TextDocument, range: Range): WorkspaceEdit {
     const currentWord: string = document.getText(range);
@@ -121,6 +125,7 @@ export function varScopeEdit(document: TextDocument, range: Range): WorkspaceEdi
  * Creates workspace edit for local scoping a variable
  * @param document The document in which the variable is declared
  * @param range The range of the variable identifier
+ * @returns
  */
 export function localScopeEdit(document: TextDocument, range: Range): WorkspaceEdit {
     const currentWord: string = document.getText(range);

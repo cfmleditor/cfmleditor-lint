@@ -11,6 +11,7 @@ import { CancellationToken, EventEmitter, Uri, CancellationTokenSource } from "v
 const canceledName = "Canceled";
 /**
  * Returns an error that signals cancellation.
+ * @returns
  */
 function canceled(): Error {
     const error = new Error(canceledName);
@@ -20,7 +21,10 @@ function canceled(): Error {
 
 /**
  * Checks if the given error is a promise in canceled state
+ * @param error
+ * @returns
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isPromiseCanceledError(error: any): boolean {
     return error instanceof Error && error.name === canceledName && error.message === canceledName;
 }
@@ -34,19 +38,22 @@ export function isPromiseCanceledError(error: any): boolean {
  * can be subscribed. The event is the subscriber function itself.
  */
 export interface Event<T> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[]): IDisposable;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Event {
     /**
      * Given an event, returns another event which only fires once.
+     * @param event
+     * @returns
      */
     export function once<T>(event: Event<T>): Event<T> {
         return (listener, thisArgs = null, disposables?) => {
             // we need this, in case the event fires during the listener call
             let didFire = false;
-            let result: IDisposable;
-            result = event(e => {
+            const result: IDisposable = event(e => {
                 if (didFire) {
                     return;
                 } else if (result) {
@@ -66,6 +73,11 @@ export namespace Event {
         };
     }
 
+    /**
+     *
+     * @param event
+     * @returns
+     */
     export function toPromise<T>(event: Event<T>): Promise<T> {
         return new Promise(resolve => once(event)(resolve));
     }
@@ -73,6 +85,11 @@ export namespace Event {
 
 //#endregion
 
+/**
+ *
+ * @param obj
+ * @returns
+ */
 export function isThenable<T>(obj: unknown): obj is Promise<T> {
     return !!obj && typeof (obj as unknown as Promise<T>).then === "function";
 }
@@ -81,6 +98,11 @@ export interface CancelablePromise<T> extends Promise<T> {
     cancel(): void;
 }
 
+/**
+ *
+ * @param callback
+ * @returns
+ */
 export function createCancelablePromise<T>(callback: (token: CancellationToken) => Promise<T>): CancelablePromise<T> {
     const source = new CancellationTokenSource();
 
@@ -107,9 +129,11 @@ export function createCancelablePromise<T>(callback: (token: CancellationToken) 
         cancel(): void {
             source.cancel();
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         then<TResult1 = T, TResult2 = never>(resolve?: ((value: T) => TResult1 | Promise<TResult1>) | undefined | null, reject?: ((reason: any) => TResult2 | Promise<TResult2>) | undefined | null): Promise<TResult1 | TResult2> {
             return promise.then(resolve, reject);
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         catch<TResult = never>(reject?: ((reason: any) => TResult | Promise<TResult>) | undefined | null): Promise<T | TResult> {
             return this.then(undefined, reject);
         }
@@ -121,12 +145,21 @@ export function createCancelablePromise<T>(callback: (token: CancellationToken) 
 
 export function raceCancellation<T>(promise: Promise<T>, token: CancellationToken): Promise<T | undefined>;
 export function raceCancellation<T>(promise: Promise<T>, token: CancellationToken, defaultValue: T): Promise<T>;
+/**
+ *
+ * @param promise
+ * @param token
+ * @param defaultValue
+ * @returns
+ */
 export function raceCancellation<T>(promise: Promise<T>, token: CancellationToken, defaultValue?: T): Promise<T | undefined> {
     return Promise.race([promise, new Promise<T | undefined>((resolve) => token.onCancellationRequested(() => resolve(defaultValue)))]);
 }
 
 /**
  * Returns as soon as one of the promises is resolved and cancels remaining promises
+ * @param cancellablePromises
+ * @returns
  */
 export async function raceCancellablePromises<T>(cancellablePromises: CancelablePromise<T>[]): Promise<T> {
     let resolvedPromiseIndex = -1;
@@ -140,6 +173,13 @@ export async function raceCancellablePromises<T>(cancellablePromises: Cancelable
     return result;
 }
 
+/**
+ *
+ * @param promise
+ * @param timeout
+ * @param onTimeout
+ * @returns
+ */
 export function raceTimeout<T>(promise: Promise<T>, timeout: number, onTimeout?: () => void): Promise<T | undefined> {
     let promiseResolve: ((value: T | undefined) => void) | undefined = undefined;
 
@@ -154,6 +194,11 @@ export function raceTimeout<T>(promise: Promise<T>, timeout: number, onTimeout?:
     ]);
 }
 
+/**
+ *
+ * @param callback
+ * @returns
+ */
 export function asPromise<T>(callback: () => T | Thenable<T>): Promise<T> {
     return new Promise<T>((resolve, reject) => {
         const item = callback();
@@ -228,6 +273,7 @@ export class Throttler<T> {
                 const onComplete = (): Promise<T> => {
                     this.queuedPromise = null;
 
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     const result = this.queue(this.queuedPromiseFactory!);
                     this.queuedPromiseFactory = null;
 
@@ -235,11 +281,13 @@ export class Throttler<T> {
                 };
 
                 this.queuedPromise = new Promise<T>((resolve) => {
+                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     this.activePromise!.then(onComplete, onComplete).then(resolve);
                 });
             }
 
             return new Promise<T>((resolve, reject) => {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 this.queuedPromise!.then(resolve, reject);
             });
         }
@@ -247,6 +295,7 @@ export class Throttler<T> {
         this.activePromise = promiseFactory();
 
         return new Promise<T>((resolve, reject) => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             this.activePromise!.then((result: T) => {
                 this.activePromise = null;
                 resolve(result);
@@ -274,6 +323,7 @@ export class SequencerByKey<TKey> {
     queue<T>(key: TKey, promiseTask: ITask<Promise<T>>): Promise<T> {
         const runningPromise = this.promiseMap.get(key) ?? Promise.resolve();
         const newPromise = runningPromise
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             .catch(() => { })
             .then(promiseTask)
             .finally(() => {
@@ -354,6 +404,7 @@ export class Delayer<T> implements IDisposable {
     private completionPromise: Promise<T> | null;
     // also referred to as onResolve or onSuccess
     private doResolve: ((value: T | Promise<T> | undefined) => void) | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private doReject: ((err: any) => void) | null;
     private task: ITask<T | Promise<T>> | null;
 
@@ -400,7 +451,8 @@ export class Delayer<T> implements IDisposable {
             return null;
         }
         this.cancelTimeout();
-        let result = this.completionPromise;
+        const result = this.completionPromise;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         this.doResolve!(undefined);
         return result;
     }
@@ -502,6 +554,7 @@ export class Barrier {
  */
 export class AutoOpenBarrier extends Barrier {
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly _timeout: any;
 
     constructor(autoOpenTimeMs: number) {
@@ -517,6 +570,12 @@ export class AutoOpenBarrier extends Barrier {
 
 export function timeout(millis: number): CancelablePromise<void>;
 export function timeout(millis: number, token: CancellationToken): Promise<void>;
+/**
+ *
+ * @param millis
+ * @param token
+ * @returns
+ */
 export function timeout(millis: number, token?: CancellationToken): CancelablePromise<void> | Promise<void> {
     if (!token) {
         return createCancelablePromise((token) => timeout(millis, token));
@@ -531,6 +590,12 @@ export function timeout(millis: number, token?: CancellationToken): CancelablePr
     });
 }
 
+/**
+ *
+ * @param handler
+ * @param timeout
+ * @returns
+ */
 export function disposableTimeout(handler: () => void, timeout = 0): IDisposable {
     const timer = setTimeout(handler, timeout);
     return toDisposable(() => clearTimeout(timer));
@@ -541,6 +606,11 @@ export function disposableTimeout(handler: () => void, timeout = 0): IDisposable
  * promise will complete to an array of results from each promise.
  */
 
+/**
+ *
+ * @param promiseFactories
+ * @returns
+ */
 export async function sequence<T>(promiseFactories: ITask<Promise<T>>[]): Promise<T[]> {
     const results: T[] = [];
     let index = 0;
@@ -550,6 +620,7 @@ export async function sequence<T>(promiseFactories: ITask<Promise<T>>[]): Promis
         return index < len ? promiseFactories[index++]() : null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function thenHandler(result: any): Promise<any> {
         if (result !== undefined && result !== null) {
             results.push(result);
@@ -566,6 +637,13 @@ export async function sequence<T>(promiseFactories: ITask<Promise<T>>[]): Promis
     return thenHandler(await Promise.resolve(null));
 }
 
+/**
+ *
+ * @param promiseFactories
+ * @param shouldStop
+ * @param defaultValue
+ * @returns
+ */
 export function first<T>(promiseFactories: ITask<Promise<T>>[], shouldStop: (t: T) => boolean = (t) => !!t, defaultValue: T | null = null): Promise<T | null> {
     let index = 0;
     const len = promiseFactories.length;
@@ -591,9 +669,20 @@ export function first<T>(promiseFactories: ITask<Promise<T>>[], shouldStop: (t: 
 /**
  * Returns the result of the first promise that matches the "shouldStop",
  * running all promises in parallel. Supports cancelable promises.
+ * @param promiseList
+ * @param shouldStop
+ * @param defaultValue
+ * @returns
  */
 export function firstParallel<T>(promiseList: Promise<T>[], shouldStop?: (t: T) => boolean, defaultValue?: T | null): Promise<T | null>;
 export function firstParallel<T, R extends T>(promiseList: Promise<T>[], shouldStop: (t: T) => t is R, defaultValue?: R | null): Promise<R | null>;
+/**
+ *
+ * @param promiseList
+ * @param shouldStop
+ * @param defaultValue
+ * @returns
+ */
 export function firstParallel<T>(promiseList: Promise<T>[], shouldStop: (t: T) => boolean = (t) => !!t, defaultValue: T | null = null) {
     if (promiseList.length === 0) {
         return Promise.resolve(defaultValue);
@@ -679,6 +768,7 @@ export class Limiter<T> implements ILimiter<T> {
 
     private consume(): void {
         while (this.outstandingPromises.length && this.runningPromises < this.maxDegreeOfParalellism) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             const iLimitedTask = this.outstandingPromises.shift()!;
             this.runningPromises++;
 
@@ -796,6 +886,7 @@ export class ResourceQueue implements IDisposable {
 }
 
 export class TimeoutTimer implements IDisposable {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _token: any;
 
     constructor();
@@ -841,6 +932,7 @@ export class TimeoutTimer implements IDisposable {
 
 export class IntervalTimer implements IDisposable {
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private _token: any;
 
     constructor() {
@@ -870,10 +962,12 @@ export class RunOnceScheduler {
 
     protected runner: ((...args: unknown[]) => void) | null;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private timeoutToken: any;
     private timeout: number;
     private timeoutHandler: () => void;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(runner: (...args: any[]) => void, delay: number) {
         this.timeoutToken = -1;
         this.runner = runner;
@@ -901,6 +995,7 @@ export class RunOnceScheduler {
 
     /**
      * Cancel previous runner (if any) & schedule a new runner.
+     * @param delay
      */
     schedule(delay = this.timeout): void {
         this.cancel();
@@ -917,6 +1012,7 @@ export class RunOnceScheduler {
 
     /**
      * Returns true if scheduled.
+     * @returns
      */
     isScheduled(): boolean {
         return this.timeoutToken !== -1;
@@ -950,6 +1046,7 @@ export class ProcessTimeRunOnceScheduler {
     private timeout: number;
 
     private counter: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private intervalToken: any;
     private intervalHandler: () => void;
 
@@ -978,6 +1075,7 @@ export class ProcessTimeRunOnceScheduler {
 
     /**
      * Cancel previous runner (if any) & schedule a new runner.
+     * @param delay
      */
     schedule(delay = this.timeout): void {
         if (delay % 1000 !== 0) {
@@ -990,6 +1088,7 @@ export class ProcessTimeRunOnceScheduler {
 
     /**
      * Returns true if scheduled.
+     * @returns
      */
     isScheduled(): boolean {
         return this.intervalToken !== -1;
@@ -1048,6 +1147,13 @@ export class RunOnceWorker<T> extends RunOnceScheduler {
 
 //#endregion
 
+/**
+ *
+ * @param task
+ * @param delay
+ * @param retries
+ * @returns
+ */
 export async function retry<T>(task: ITask<Promise<T>>, delay: number, retries: number): Promise<T> {
     let lastError: Error | undefined;
 
@@ -1152,7 +1258,9 @@ export class TaskSequentializer {
             this._next = {
                 run,
                 promise,
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 promiseResolve: promiseResolve!,
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 promiseReject: promiseReject!
             };
         }
@@ -1267,6 +1375,7 @@ export class DeferredPromise<T> {
 
 //#region Promises
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Promises {
 
     /**
@@ -1275,6 +1384,8 @@ export namespace Promises {
      *
      * Similar to `Promise.all`, only the first error will be returned
      * if any.
+     * @param promises
+     * @returns
      */
     export async function settled<T>(promises: Promise<T>[]): Promise<T[]> {
         let firstError: Error | undefined = undefined;
@@ -1303,6 +1414,8 @@ export namespace Promises {
      *
      * This method should only be used in rare cases where otherwise `async`
      * cannot be used (e.g. when callbacks are involved that require this).
+     * @param bodyFn
+     * @returns
      */
     export function withAsyncBody<T, E = Error>(bodyFn: (resolve: (value: T) => unknown, reject: (error: E) => unknown) => Promise<unknown>): Promise<T> {
         // eslint-disable-next-line no-async-promise-executor
@@ -1395,6 +1508,7 @@ export class AsyncIterableObject<T> implements AsyncIterable<T> {
         });
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public static EMPTY = AsyncIterableObject.fromArray<any>([]);
 
     private _state: AsyncIterableSourceState;
@@ -1420,8 +1534,11 @@ export class AsyncIterableObject<T> implements AsyncIterable<T> {
             } catch (err) {
                 this.reject(err);
             } finally {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 writer.emitOne = undefined!;
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 writer.emitMany = undefined!;
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 writer.reject = undefined!;
             }
         });
@@ -1442,6 +1559,7 @@ export class AsyncIterableObject<T> implements AsyncIterable<T> {
                         return { done: true, value: undefined };
                     }
                     await Event.toPromise(this._onStateChanged.event);
+                // eslint-disable-next-line no-constant-condition
                 } while (true);
             }
         };
@@ -1497,6 +1615,7 @@ export class AsyncIterableObject<T> implements AsyncIterable<T> {
      * The value will be appended at the end.
      *
      * **NOTE** If `resolve()` or `reject()` have already been called, this method has no effect.
+     * @param value
      */
     private emitOne(value: T): void {
         if (this._state !== AsyncIterableSourceState.Initial) {
@@ -1512,6 +1631,7 @@ export class AsyncIterableObject<T> implements AsyncIterable<T> {
      * The values will be appended at the end.
      *
      * **NOTE** If `resolve()` or `reject()` have already been called, this method has no effect.
+     * @param values
      */
     private emitMany(values: T[]): void {
         if (this._state !== AsyncIterableSourceState.Initial) {
@@ -1542,6 +1662,7 @@ export class AsyncIterableObject<T> implements AsyncIterable<T> {
      * The current users will receive an error thrown, as will all future users.
      *
      * **NOTE** If `resolve()` or `reject()` have already been called, this method has no effect.
+     * @param error
      */
     private reject(error: Error) {
         if (this._state !== AsyncIterableSourceState.Initial) {
@@ -1566,6 +1687,11 @@ export class CancelableAsyncIterableObject<T> extends AsyncIterableObject<T> {
     }
 }
 
+/**
+ *
+ * @param callback
+ * @returns
+ */
 export function createCancelableAsyncIterable<T>(callback: (token: CancellationToken) => AsyncIterable<T>): CancelableAsyncIterableObject<T> {
     const source = new CancellationTokenSource();
     const innerIterable = callback(source.token);
