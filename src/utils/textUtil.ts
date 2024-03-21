@@ -1,5 +1,4 @@
-import camelCase from "camelcase";
-import upperCamelCase from "uppercamelcase";
+import { camelCase, pascalCase } from "change-case-all";
 
 
 /**
@@ -26,7 +25,7 @@ export function transformTextCase(word: string, textCase: string): string {
             transformedText = camelCase(word);
             break;
         case "PascalCase":
-            transformedText = upperCamelCase(word);
+            transformedText = pascalCase(word);
             break;
         case "lowercase":
             transformedText = word.toLocaleLowerCase();

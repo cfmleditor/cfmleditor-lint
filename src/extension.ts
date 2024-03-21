@@ -1,9 +1,9 @@
 import { Octokit } from "@octokit/rest";
 import { ChildProcess, spawn } from "child_process";
-import * as fs from "fs";
-import * as micromatch from "micromatch";
-import * as path from "path";
-import * as semver from "semver";
+import { existsSync, statSync } from "fs";
+import { some } from "micromatch";
+import { basename, join, delimiter, dirname, parse } from "path";
+import { lt } from "semver";
 import { commands, ConfigurationTarget, Diagnostic, DiagnosticCollection, DocumentFilter, env, ExtensionContext, extensions, languages, OpenDialogOptions,
     StatusBarAlignment, StatusBarItem, TextDocument, TextDocumentChangeEvent, TextEditor, Uri, window, workspace, WorkspaceConfiguration, OutputChannel, FileType } from "vscode";
 import { CFMLApiV0 } from "../typings/cfmlApi";
@@ -95,7 +95,7 @@ async function enable(): Promise<void> {
         window.showErrorMessage("CFLint can only be enabled if VS Code is opened on a workspace folder.");
         return;
     }
-    const cflintSettings: WorkspaceConfiguration = getCFLintSettings(window.activeTextEditor.document.uri);
+    const cflintSettings: WorkspaceConfiguration = getCFLintSettings(window.activeTextEditor?.document.uri);
     cflintSettings.update("enabled", true, ConfigurationTarget.Workspace);
     updateStatusBarItem(window.activeTextEditor);
 }
@@ -108,7 +108,7 @@ async function disable(): Promise<void> {
         window.showErrorMessage("CFLint can only be disabled if VS Code is opened on a workspace folder.");
         return;
     }
-    const cflintSettings: WorkspaceConfiguration = getCFLintSettings(window.activeTextEditor.document.uri);
+    const cflintSettings: WorkspaceConfiguration = getCFLintSettings(window.activeTextEditor?.document.uri);
     cflintSettings.update("enabled", false, ConfigurationTarget.Workspace);
     updateStatusBarItem(window.activeTextEditor);
 }
@@ -133,7 +133,7 @@ function shouldExcludeDocument(documentUri: Uri): boolean {
     const excludeGlobs = cflintSettings.get<string[]>("exclude", []);
     const relativePath = workspace.asRelativePath(documentUri);
 
-    return micromatch.some(relativePath, excludeGlobs);
+    return some(relativePath, excludeGlobs);
 }
 
 /**
@@ -202,13 +202,13 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
 
     // Start with setting
     if (javaPathSetting) {
-        if (fs.existsSync(javaPathSetting)) {
-            const checkStats = fs.statSync(javaPathSetting);
-            if (checkStats.isFile() && path.basename(javaPathSetting) === javaBinName) {
+        if (existsSync(javaPathSetting)) {
+            const checkStats = statSync(javaPathSetting);
+            if (checkStats.isFile() && basename(javaPathSetting) === javaBinName) {
                 return javaPathSetting;
             } else if (checkStats.isDirectory()) {
-                const javaPath: string = path.join(javaPathSetting, javaBinName);
-                if (fs.existsSync(javaPath)) {
+                const javaPath: string = join(javaPathSetting, javaBinName);
+                if (existsSync(javaPath)) {
                     return javaPath;
                 }
             }
@@ -222,9 +222,9 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
     // Then search JAVA_HOME
     const envJavaHome = process.env["JAVA_HOME"];
     if (envJavaHome) {
-        const javaPath = path.join(envJavaHome, "bin", javaBinName);
+        const javaPath = join(envJavaHome, "bin", javaBinName);
 
-        if (javaPath && fs.existsSync(javaPath)) {
+        if (javaPath && existsSync(javaPath)) {
             return javaPath;
         }
     }
@@ -232,10 +232,10 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
     // Then search PATH parts
     const envPath = process.env["PATH"];
     if (envPath) {
-        const pathParts: string[] = envPath.split(path.delimiter);
+        const pathParts: string[] = envPath.split(delimiter);
         for (const pathPart of pathParts) {
-            const javaPath: string = path.join(pathPart, javaBinName);
-            if (fs.existsSync(javaPath)) {
+            const javaPath: string = join(pathPart, javaBinName);
+            if (existsSync(javaPath)) {
                 return javaPath;
             }
         }
@@ -354,7 +354,7 @@ function showInvalidJarPathMessage(resource: Uri): void {
 
                 if (jarPath) {
                     try {
-                        const dirPath: string = path.dirname(jarPath);
+                        const dirPath: string = dirname(jarPath);
                         if (dirPath) {
                             openDialogOptions.defaultUri = Uri.file(dirPath);
                         }
@@ -403,7 +403,7 @@ function showInvalidOutputDirectoryMessage(resource: Uri): void {
 
                 if (outputDirectory) {
                     try {
-                        const dirPath: string = path.dirname(outputDirectory);
+                        const dirPath: string = dirname(outputDirectory);
                         if (dirPath) {
                             openDialogOptions.defaultUri = Uri.file(dirPath);
                         }
@@ -540,7 +540,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(document.uri);
 
     const outputDirectory: string = cflintSettings.get<string>("outputDirectory", "");
-    let outputFileName = `cflint-results-${path.parse(document.fileName).name}-${Date.now()}`;
+    let outputFileName = `cflint-results-${parse(document.fileName).name}-${Date.now()}`;
 
     let fileCommand: string;
     switch (format) {
@@ -566,7 +566,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
             break;
     }
 
-    const fullOutputPath: string = path.join(outputDirectory, outputFileName);
+    const fullOutputPath: string = join(outputDirectory, outputFileName);
 
     const javaExecutable: string = await findJavaExecutable(document.uri);
 
@@ -604,7 +604,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
                 updateState(State.Stopped);
             }
 
-            window.showInformationMessage(`Successfully output ${format} file for ${path.basename(document.fileName)}`, "Open").then(
+            window.showInformationMessage(`Successfully output ${format} file for ${basename(document.fileName)}`, "Open").then(
                 async (selection: string) => {
                     if (selection === "Open") {
                         workspace.openTextDocument(Uri.file(fullOutputPath)).then((outputDocument) => window.showTextDocument(outputDocument));
@@ -650,7 +650,7 @@ async function checkForLatestRelease(currentVersion: string): Promise<void> {
 
     const latestReleaseResult = await octokit.repos.getLatestRelease({ owner: gitRepoInfo.owner, repo: gitRepoInfo.repo });
 
-    if (latestReleaseResult?.status === httpSuccessStatusCode && semver.lt(currentVersion, latestReleaseResult.data.tag_name.replace(/[^\d]*/, ""))) {
+    if (latestReleaseResult?.status === httpSuccessStatusCode && lt(currentVersion, latestReleaseResult.data.tag_name.replace(/[^\d]*/, ""))) {
         notifyForLatestRelease(latestReleaseResult.data.tag_name);
     }
 }
@@ -681,7 +681,7 @@ function cfLintResult(document: TextDocument, output: string): void {
     const parsedOutput = JSON.parse(output);
 
     if (!versionPrompted) {
-        if (!parsedOutput.hasOwnProperty("version") || semver.lt(parsedOutput.version, minimumCFLintVersion)) {
+        if (!parsedOutput.hasOwnProperty("version") || lt(parsedOutput.version, minimumCFLintVersion)) {
             notifyForMinimumVersion();
         } else {
             checkForLatestRelease(parsedOutput.version);
@@ -876,7 +876,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         }
     } catch (err) {
         cfmlApi = null;
-        //console.error(err);
+        // console.error(err);
     }
 
     // TODO: Add command for running linter for all opened CFML files. Needs refactoring. Needs API for opened editors.
@@ -888,7 +888,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
             return;
         }
 
-        if (!document.uri.path || (path.basename(document.uri.path) === document.uri.path && !await fileExists(document.uri))) {
+        if (!document.uri.path || (basename(document.uri.path) === document.uri.path && !await fileExists(document.uri))) {
             return;
         }
 

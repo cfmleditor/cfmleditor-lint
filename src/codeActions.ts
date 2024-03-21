@@ -9,13 +9,13 @@ import { constructConfigExcludeRuleLabel, localScopeEdit, transformCaseRuleEdit,
 export default class CFLintCodeActionProvider implements CodeActionProvider {
     /**
      * Provide code actions for the given document and range.
-     *
      * @param document The document in which the command was invoked.
      * @param _range The range for which the command was invoked.
      * @param context Context carrying additional information.
      * @param _token A cancellation token.
-     * @return An array of commands or a thenable of such.
+     * @returns An array of commands or a thenable of such.
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public async provideCodeActions(document: TextDocument, _range: Range, context: CodeActionContext, _token: CancellationToken): Promise<CodeAction[]> {
         const configDocument: TextDocument = await getActiveConfig(document);
         let parsedConfig: Config;
@@ -34,18 +34,21 @@ export default class CFLintCodeActionProvider implements CodeActionProvider {
             switch (ruleCode) {
                 case "VAR_INVALID_NAME": case "VAR_ALLCAPS_NAME":
                     caseConvention = "camelCase";
+                    // eslint-disable-next-line no-prototype-builtins
                     if (parsedConfig?.parameters?.hasOwnProperty("VariableNameChecker.case")) {
                         caseConvention = parsedConfig.parameters["VariableNameChecker.case"];
                     }
                     break;
                 case "METHOD_INVALID_NAME": case "METHOD_ALLCAPS_NAME":
                     caseConvention = "camelCase";
+                    // eslint-disable-next-line no-prototype-builtins
                     if (parsedConfig?.parameters?.hasOwnProperty("MethodNameChecker.case")) {
                         caseConvention = parsedConfig.parameters["MethodNameChecker.case"];
                     }
                     break;
                 case "ARGUMENT_INVALID_NAME": case "ARGUMENT_ALLCAPS_NAME":
                     caseConvention = "camelCase";
+                    // eslint-disable-next-line no-prototype-builtins
                     if (parsedConfig?.parameters?.hasOwnProperty("ArgumentNameChecker.case")) {
                         caseConvention = parsedConfig.parameters["ArgumentNameChecker.case"];
                     }
