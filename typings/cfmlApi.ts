@@ -1,39 +1,39 @@
-import { Uri, Range, TextDocument, Position, Location } from "vscode";
+import * as vscode from "vscode";
 
 export interface CFMLApiV0 {
     getContextUtils(): ContextUtilApi;
-    componentPathToUri(dotPath: string, baseUri: Uri): Uri | undefined;
+    componentPathToUri(dotPath: string, baseUri: vscode.Uri): vscode.Uri | undefined;
     isSubcomponent(checkComponent: Component, baseComponent: Component): boolean;
-    getComponent(uri: Uri): Component;
-    getScriptFunctionArgRanges(documentStateContext: DocumentStateContext, argsRange: Range, separatorChar?: string): Range[];
+    getComponent(uri: vscode.Uri): Component;
+    getScriptFunctionArgRanges(documentStateContext: DocumentStateContext, argsRange: vscode.Range, separatorChar?: string): vscode.Range[];
     isBulkCaching(): boolean;
 }
 
 export interface ContextUtilApi {
-    isCfmFile(document: TextDocument): boolean;
-    isCfcFile(document: TextDocument): boolean;
-    isCfcUri(uri: Uri): boolean;
-    isPositionScript(document: TextDocument, position: Position): boolean;
-    isInComment(document: TextDocument, position: Position, isScript?: boolean): boolean;
+    isCfmFile(document: vscode.TextDocument): boolean;
+    isCfcFile(document: vscode.TextDocument): boolean;
+    isCfcUri(uri: vscode.Uri): boolean;
+    isPositionScript(document: vscode.TextDocument, position: vscode.Position): boolean;
+    isInComment(document: vscode.TextDocument, position: vscode.Position, isScript?: boolean): boolean;
     isStringDelimiter(char: string): boolean;
-    getNextCharacterPosition(documentStateContext: DocumentStateContext, startOffset: number, endOffset: number, char: string | string[], includeChar?: boolean): Position;
-    getClosingPosition(documentStateContext: DocumentStateContext, initialOffset: number, closingChar: string): Position;
+    getNextCharacterPosition(documentStateContext: DocumentStateContext, startOffset: number, endOffset: number, char: string | string[], includeChar?: boolean): vscode.Position;
+    getClosingPosition(documentStateContext: DocumentStateContext, initialOffset: number, closingChar: string): vscode.Position;
 }
 
 export interface Component {
-    uri: Uri;
+    uri: vscode.Uri;
     name: string;
     isScript: boolean;
     isInterface: boolean; // should be a separate type, but chose this for the purpose of simplification
-    declarationRange: Range;
+    declarationRange: vscode.Range;
     displayname: string;
     hint: string;
     accessors: boolean;
     initmethod?: string;
-    extends?: Uri;
-    extendsRange?: Range;
-    implements?: Uri[];
-    implementsRanges?: Range[];
+    extends?: vscode.Uri;
+    extendsRange?: vscode.Range;
+    implements?: vscode.Uri[];
+    implementsRanges?: vscode.Range[];
     functions: ComponentFunctions;
     properties: Properties;
     variables: Variable[];
@@ -41,13 +41,13 @@ export interface Component {
 }
 
 export interface DocumentStateContext {
-    document: TextDocument;
+    document: vscode.TextDocument;
     isCfmFile: boolean;
     isCfcFile: boolean;
     docIsScript: boolean;
-    commentRanges: Range[];
-    stringRanges?: Range[];
-    stringEmbeddedCfmlRanges?: Range[];
+    commentRanges: vscode.Range[];
+    stringRanges?: vscode.Range[];
+    stringEmbeddedCfmlRanges?: vscode.Range[];
     sanitizedDocumentText: string;
     component?: Component;
     userEngine: object; // CFMLEngine
@@ -56,10 +56,10 @@ export interface DocumentStateContext {
 export interface Variable {
     identifier: string;
     dataType: DataType;
-    dataTypeComponentUri?: Uri; // Only when dataType is Component
+    dataTypeComponentUri?: vscode.Uri; // Only when dataType is Component
     scope: Scope;
     final: boolean;
-    declarationLocation: Location;
+    declarationLocation: vscode.Location;
     description?: string;
     initialValue?: string;
 }
@@ -113,13 +113,13 @@ export type Properties = Map<string, Property>
 export interface Property {
     name: string;
     dataType: DataType;
-    dataTypeComponentUri?: Uri; // Only when dataType is Component
+    dataTypeComponentUri?: vscode.Uri; // Only when dataType is Component
     description?: string;
     getter?: boolean;
     setter?: boolean;
-    nameRange: Range;
-    dataTypeRange?: Range;
-    propertyRange: Range;
+    nameRange: vscode.Range;
+    dataTypeRange?: vscode.Range;
+    propertyRange: vscode.Range;
     default?: string;
 }
 
@@ -130,12 +130,12 @@ export interface UserFunction extends Function {
     static: boolean;
     abstract: boolean;
     final: boolean;
-    returnTypeUri?: Uri; // Only when returntype is Component
-    returnTypeRange?: Range;
-    nameRange: Range;
-    bodyRange?: Range;
+    returnTypeUri?: vscode.Uri; // Only when returntype is Component
+    returnTypeRange?: vscode.Range;
+    nameRange: vscode.Range;
+    bodyRange?: vscode.Range;
     signatures: UserFunctionSignature[];
-    location: Location;
+    location: vscode.Location;
     isImplicit: boolean;
 }
 
@@ -166,9 +166,9 @@ export interface UserFunctionSignature extends Signature {
 
 export interface Argument extends Parameter {
     // description is hint
-    nameRange: Range;
-    dataTypeRange?: Range;
-    dataTypeComponentUri?: Uri; // Only when dataType is Component
+    nameRange: vscode.Range;
+    dataTypeRange?: vscode.Range;
+    dataTypeComponentUri?: vscode.Uri; // Only when dataType is Component
 }
 
 export enum Access {

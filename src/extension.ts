@@ -1,9 +1,9 @@
 import { Octokit } from "@octokit/rest";
 import { ChildProcess, spawn } from "child_process";
-import { statSync, existsSync } from "fs";
-import { match } from "monaco-editor-core/esm/vs/base/common/glob";
-import { basename, join, delimiter, dirname, parse } from "path";
-import { lt } from "semver";
+import * as fs from "fs";
+import * as micromatch from "micromatch";
+import * as path from "path";
+import * as semver from "semver";
 import { commands, ConfigurationTarget, Diagnostic, DiagnosticCollection, DocumentFilter, env, ExtensionContext, extensions, languages, OpenDialogOptions,
     StatusBarAlignment, StatusBarItem, TextDocument, TextDocumentChangeEvent, TextEditor, Uri, window, workspace, WorkspaceConfiguration, OutputChannel, FileType } from "vscode";
 import { CFMLApiV0 } from "../typings/cfmlApi";
@@ -17,7 +17,7 @@ import { fileExists } from "./utils/fileUtils";
 
 const octokit = new Octokit();
 const gitRepoInfo = {
-    owner: "cfmleditor",
+    owner: "cflint",
     repo: "CFLint"
 };
 const httpSuccessStatusCode = 200;
@@ -79,8 +79,9 @@ let versionPrompted = false;
 
 /**
  * Checks whether the language id is compatible with CFML.
+ *
  * @param languageId The VSCode language id to check.
- * @returns Indication of whether the language id is compatible with CFML.
+ * @return Indication of whether the language id is compatible with CFML.
  */
 function isCfmlLanguage(languageId: string): boolean {
     return LANGUAGE_IDS.includes(languageId);
@@ -114,8 +115,8 @@ async function disable(): Promise<void> {
 
 /**
  * Checks whether the linter is enabled.
+ *
  * @param resource The Uri of the document to check against
- * @returns
  */
 function isLinterEnabled(resource: Uri): boolean {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(resource);
@@ -124,21 +125,21 @@ function isLinterEnabled(resource: Uri): boolean {
 
 /**
  * Checks whether the given document matches the set of excluded globs.
+ *
  * @param documentUri The URI of the document to check against
- * @returns
  */
 function shouldExcludeDocument(documentUri: Uri): boolean {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(documentUri);
     const excludeGlobs = cflintSettings.get<string[]>("exclude", []);
     const relativePath = workspace.asRelativePath(documentUri);
 
-    return match(excludeGlobs, relativePath);
+    return micromatch.some(relativePath, excludeGlobs);
 }
 
 /**
  * Checks whether the given document should be linted.
+ *
  * @param document The document to check against
- * @returns
  */
 function shouldLintDocument(document: TextDocument): boolean {
     return isLinterEnabled(document.uri)
@@ -150,7 +151,6 @@ function shouldLintDocument(document: TextDocument): boolean {
 /**
  * Checks whether the document is on cooldown.
  * @param document The TextDocument for which to check cooldown status
- * @returns
  */
 function isOnCooldown(document: TextDocument): boolean {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(document.uri);
@@ -168,8 +168,8 @@ function isOnCooldown(document: TextDocument): boolean {
 
 /**
  * Retrieves VSCode settings for CFLint
+ *
  * @param resource The Uri of the document to check against
- * @returns
  */
 export function getCFLintSettings(resource: Uri = null): WorkspaceConfiguration {
     return workspace.getConfiguration(settingsSection, resource);
@@ -177,8 +177,9 @@ export function getCFLintSettings(resource: Uri = null): WorkspaceConfiguration 
 
 /**
  * Gets the proper Java bin name for the platform.
+ *
  * @param binName The base name for the bin file
- * @returns The Java bin name for the current platform.
+ * @return The Java bin name for the current platform.
  */
 function correctJavaBinName(binName: string): string {
     if (process.platform === "win32") {
@@ -190,8 +191,9 @@ function correctJavaBinName(binName: string): string {
 
 /**
  * Gets the full path to the java executable to be used.
+ *
  * @param resource The URI of the resource for which to check the path
- * @returns The full path to the java executable.
+ * @return The full path to the java executable.
  */
 async function findJavaExecutable(resource: Uri): Promise<string> {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(resource);
@@ -200,13 +202,13 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
 
     // Start with setting
     if (javaPathSetting) {
-        if (existsSync(javaPathSetting)) {
-            const checkStats = statSync(javaPathSetting);
-            if (checkStats.isFile() && basename(javaPathSetting) === javaBinName) {
+        if (fs.existsSync(javaPathSetting)) {
+            const checkStats = fs.statSync(javaPathSetting);
+            if (checkStats.isFile() && path.basename(javaPathSetting) === javaBinName) {
                 return javaPathSetting;
             } else if (checkStats.isDirectory()) {
-                const javaPath: string = join(javaPathSetting, javaBinName);
-                if (existsSync(javaPath)) {
+                const javaPath: string = path.join(javaPathSetting, javaBinName);
+                if (fs.existsSync(javaPath)) {
                     return javaPath;
                 }
             }
@@ -220,9 +222,9 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
     // Then search JAVA_HOME
     const envJavaHome = process.env["JAVA_HOME"];
     if (envJavaHome) {
-        const javaPath = join(envJavaHome, "bin", javaBinName);
+        const javaPath = path.join(envJavaHome, "bin", javaBinName);
 
-        if (javaPath && existsSync(javaPath)) {
+        if (javaPath && fs.existsSync(javaPath)) {
             return javaPath;
         }
     }
@@ -230,10 +232,10 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
     // Then search PATH parts
     const envPath = process.env["PATH"];
     if (envPath) {
-        const pathParts: string[] = envPath.split(delimiter);
+        const pathParts: string[] = envPath.split(path.delimiter);
         for (const pathPart of pathParts) {
-            const javaPath: string = join(pathPart, javaBinName);
-            if (existsSync(javaPath)) {
+            const javaPath: string = path.join(pathPart, javaBinName);
+            if (fs.existsSync(javaPath)) {
                 return javaPath;
             }
         }
@@ -244,8 +246,9 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
 
 /**
  * Checks to see if cflint.jarPath resolves to a valid file path.
+ *
  * @param resource The resource for which to check the settings
- * @returns Whether the JAR path in settings is a valid path.
+ * @return Whether the JAR path in settings is a valid path.
  */
 async function jarPathExists(resource: Uri): Promise<boolean> {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(resource);
@@ -265,8 +268,9 @@ async function jarPathExists(resource: Uri): Promise<boolean> {
 
 /**
  * Checks to see if cflint.outputDirectory resolves to a valid directory path.
+ *
  * @param resource The resource for which to check the settings
- * @returns Whether the output directory path in settings is a valid path.
+ * @return Whether the output directory path in settings is a valid path.
  */
 async function outputPathExists(resource: Uri): Promise<boolean> {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(resource);
@@ -286,8 +290,9 @@ async function outputPathExists(resource: Uri): Promise<boolean> {
 
 /**
  * Checks if the given file URI is valid and exists
+ *
  * @param fileUri The URI to check validity.
- * @returns Empty string if valid, else an error message.
+ * @return Empty string if valid, else an error message.
  */
 async function validateFileUri(fileUri: Uri): Promise<string> {
     try {
@@ -303,8 +308,9 @@ async function validateFileUri(fileUri: Uri): Promise<string> {
 
 /**
  * Checks if the given directory file URI is valid and exists
+ *
  * @param directoryUri The URI to check validity.
- * @returns Empty string if valid, else an error message.
+ * @return Empty string if valid, else an error message.
  */
 async function validateDirectoryUri(directoryUri: Uri): Promise<string> {
     try {
@@ -348,7 +354,7 @@ function showInvalidJarPathMessage(resource: Uri): void {
 
                 if (jarPath) {
                     try {
-                        const dirPath: string = dirname(jarPath);
+                        const dirPath: string = path.dirname(jarPath);
                         if (dirPath) {
                             openDialogOptions.defaultUri = Uri.file(dirPath);
                         }
@@ -397,7 +403,7 @@ function showInvalidOutputDirectoryMessage(resource: Uri): void {
 
                 if (outputDirectory) {
                     try {
-                        const dirPath: string = dirname(outputDirectory);
+                        const dirPath: string = path.dirname(outputDirectory);
                         if (dirPath) {
                             openDialogOptions.defaultUri = Uri.file(dirPath);
                         }
@@ -418,6 +424,7 @@ function showInvalidOutputDirectoryMessage(resource: Uri): void {
 
 /**
  * Lints the given document.
+ *
  * @param document The document being linted.
  */
 async function lintDocument(document: TextDocument): Promise<void> {
@@ -444,6 +451,7 @@ async function lintDocument(document: TextDocument): Promise<void> {
 
 /**
  * Lints the given document, outputting to Diagnostics.
+ *
  * @param document The document being linted.
  */
 async function onLintDocument(document: TextDocument): Promise<void> {
@@ -514,6 +522,7 @@ async function onLintDocument(document: TextDocument): Promise<void> {
 
 /**
  * Lints the given document, outputting to a file.
+ *
  * @param document The document being linted.
  * @param format The format of the output.
  */
@@ -531,7 +540,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(document.uri);
 
     const outputDirectory: string = cflintSettings.get<string>("outputDirectory", "");
-    let outputFileName = `cflint-results-${parse(document.fileName).name}-${Date.now()}`;
+    let outputFileName = `cflint-results-${path.parse(document.fileName).name}-${Date.now()}`;
 
     let fileCommand: string;
     switch (format) {
@@ -557,7 +566,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
             break;
     }
 
-    const fullOutputPath: string = join(outputDirectory, outputFileName);
+    const fullOutputPath: string = path.join(outputDirectory, outputFileName);
 
     const javaExecutable: string = await findJavaExecutable(document.uri);
 
@@ -595,7 +604,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
                 updateState(State.Stopped);
             }
 
-            window.showInformationMessage(`Successfully output ${format} file for ${basename(document.fileName)}`, "Open").then(
+            window.showInformationMessage(`Successfully output ${format} file for ${path.basename(document.fileName)}`, "Open").then(
                 async (selection: string) => {
                     if (selection === "Open") {
                         workspace.openTextDocument(Uri.file(fullOutputPath)).then((outputDocument) => window.showTextDocument(outputDocument));
@@ -628,6 +637,7 @@ async function notifyForMinimumVersion(): Promise<void> {
 
 /**
  * Checks for newer version of CFLint
+ *
  * @param currentVersion The current version of CFLint being used
  */
 async function checkForLatestRelease(currentVersion: string): Promise<void> {
@@ -640,13 +650,14 @@ async function checkForLatestRelease(currentVersion: string): Promise<void> {
 
     const latestReleaseResult = await octokit.repos.getLatestRelease({ owner: gitRepoInfo.owner, repo: gitRepoInfo.repo });
 
-    if (latestReleaseResult?.status === httpSuccessStatusCode && lt(currentVersion, latestReleaseResult.data.tag_name.replace(/[^\d]*/, ""))) {
+    if (latestReleaseResult?.status === httpSuccessStatusCode && semver.lt(currentVersion, latestReleaseResult.data.tag_name.replace(/[^\d]*/, ""))) {
         notifyForLatestRelease(latestReleaseResult.data.tag_name);
     }
 }
 
 /**
  * Displays a notification message informing of a newer version of CFLint
+ *
  * @param tagName The Git tag name for the latest release of CFLint
  */
 async function notifyForLatestRelease(tagName: string): Promise<void> {
@@ -662,6 +673,7 @@ async function notifyForLatestRelease(tagName: string): Promise<void> {
 
 /**
  * Processes CFLint output into Diagnostics
+ *
  * @param document Document being linted
  * @param output CFLint JSON output
  */
@@ -669,7 +681,7 @@ function cfLintResult(document: TextDocument, output: string): void {
     const parsedOutput = JSON.parse(output);
 
     if (!versionPrompted) {
-        if (!Object.prototype.hasOwnProperty.call(parsedOutput, "version") || lt(parsedOutput.version, minimumCFLintVersion)) {
+        if (!parsedOutput.hasOwnProperty("version") || semver.lt(parsedOutput.version, minimumCFLintVersion)) {
             notifyForMinimumVersion();
         } else {
             checkForLatestRelease(parsedOutput.version);
@@ -688,9 +700,9 @@ function cfLintResult(document: TextDocument, output: string): void {
 
 /**
  * Opens a link that describes the rules.
+ *
  * @param _ruleId An optional identifer/code for a particular CFLint rule.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function showRuleDocumentation(_ruleId?: string): Promise<void> {
     const cflintRulesFileName = "RULES.md";
     const cflintRulesUri = Uri.joinPath(extensionContext.extensionUri, "resources", cflintRulesFileName);
@@ -731,6 +743,7 @@ async function showCFLintReleases(): Promise<void> {
 
 /**
  * Displays or hides CFLint status bar item
+ *
  * @param show If true, status bar item is shown, else it's hidden
  */
 function showStatusBarItem(show: boolean): void {
@@ -743,6 +756,7 @@ function showStatusBarItem(show: boolean): void {
 
 /**
  * Updates the CFLint state
+ *
  * @param state enum representing the new state of CFLint
  */
 function updateState(state: State): void {
@@ -752,6 +766,7 @@ function updateState(state: State): void {
 
 /**
  * Updates CFLint status bar item based on current settings and state
+ *
  * @param editor The active text editor
  */
 function updateStatusBarItem(editor: TextEditor): void {
@@ -781,6 +796,7 @@ function initializeSettings(): void {
 
 /**
  * This method is called when the extension is activated.
+ *
  * @param context The context object for this extension.
  */
 export async function activate(context: ExtensionContext): Promise<void> {
@@ -872,7 +888,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
             return;
         }
 
-        if (!document.uri.path || (basename(document.uri.path) === document.uri.path && !await fileExists(document.uri))) {
+        if (!document.uri.path || (path.basename(document.uri.path) === document.uri.path && !await fileExists(document.uri))) {
             return;
         }
 
@@ -966,6 +982,5 @@ export async function activate(context: ExtensionContext): Promise<void> {
 /**
  * This method is called when the extension is deactivated.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-function
 export function deactivate(): void {
 }
