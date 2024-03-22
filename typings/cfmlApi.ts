@@ -1,24 +1,24 @@
-import {Uri, Range, TextDocument, Position, Location} from "vscode";
+import {Uri, Range, TextDocument, Location} from "vscode";
 
-export interface CFMLApiV0 {
-    getContextUtils(): ContextUtilApi;
-    componentPathToUri(dotPath: string, baseUri: Uri): Uri | undefined;
-    isSubcomponent(checkComponent: Component, baseComponent: Component): boolean;
-    getComponent(uri: Uri): Component;
-    getScriptFunctionArgRanges(documentStateContext: DocumentStateContext, argsRange: Range, separatorChar?: string): Range[];
+export interface CFMLEditorApi {
+    // getContextUtils(): ContextUtilApi;
+    // componentPathToUri(dotPath: string, baseUri: Uri): Uri | undefined;
+    // isSubcomponent(checkComponent: Component, baseComponent: Component): boolean;
+    // getComponent(uri: Uri): Component;
+    // getScriptFunctionArgRanges(documentStateContext: DocumentStateContext, argsRange: Range, separatorChar?: string): Range[];
     isBulkCaching(): boolean;
 }
 
-export interface ContextUtilApi {
-    isCfmFile(document: TextDocument): boolean;
-    isCfcFile(document: TextDocument): boolean;
-    isCfcUri(uri: Uri): boolean;
-    isPositionScript(document: TextDocument, position: Position): boolean;
-    isInComment(document: TextDocument, position: Position, isScript?: boolean): boolean;
-    isStringDelimiter(char: string): boolean;
-    getNextCharacterPosition(documentStateContext: DocumentStateContext, startOffset: number, endOffset: number, char: string | string[], includeChar?: boolean): Position;
-    getClosingPosition(documentStateContext: DocumentStateContext, initialOffset: number, closingChar: string): Position;
-}
+// export interface ContextUtilApi {
+//     isCfmFile(document: TextDocument): boolean;
+//     isCfcFile(document: TextDocument): boolean;
+//     isCfcUri(uri: Uri): boolean;
+//     isPositionScript(document: TextDocument, position: Position): boolean;
+//     isInComment(document: TextDocument, position: Position, isScript?: boolean): boolean;
+//     isStringDelimiter(char: string): boolean;
+//     getNextCharacterPosition(documentStateContext: DocumentStateContext, startOffset: number, endOffset: number, char: string | string[], includeChar?: boolean): Position;
+//     getClosingPosition(documentStateContext: DocumentStateContext, initialOffset: number, closingChar: string): Position;
+// }
 
 export interface Component {
     uri: Uri;

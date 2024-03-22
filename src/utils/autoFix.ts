@@ -1,6 +1,5 @@
-import { Position, Range, TextDocument, TextEdit, TextLine, WorkspaceEdit } from "vscode";
+import { Range, TextDocument, TextEdit, WorkspaceEdit } from "vscode";
 import { transformTextCase } from "./textUtil";
-import { cfmlApi } from "../extension";
 
 export interface AutoFix {
     label: string;
@@ -26,19 +25,6 @@ export function constructInlineIgnoreRuleLabel(ruleCode: string): string {
     return `Ignore rule "${ruleCode}" for this line`;
 }
 
-/**
- * Creates the ignore rule text for the given rules codes based on whether this is in a script context
- * @param ruleCodes The rule codes to be ignored by this text
- * @param isScript Whether the ignore rule text in the script context
- * @returns
- */
-function createInlineIgnoreRuleText(ruleCodes: string[], isScript: boolean): string {
-    const createLineComment = (text: string, isScript: boolean): string => {
-        return isScript ? `// ${text}` : `<!--- ${text} --->`;
-    };
-
-    return createLineComment(`@CFLintIgnore ${ruleCodes.join(",")}`, isScript) + "\n";
-}
 
 /**
  * Creates autofix for adding an inline ignore rule
@@ -47,7 +33,7 @@ function createInlineIgnoreRuleText(ruleCodes: string[], isScript: boolean): str
  * @param ruleCode The rule code to be ignored
  * @returns
  */
-function createInlineIgnoreRuleFix(document: TextDocument, range: Range, ruleCode: string): AutoFix {
+/*function createInlineIgnoreRuleFix(document: TextDocument, range: Range, ruleCode: string): AutoFix {
     // TODO: Check for an existing ignored rule for this line
 
     const isScript: boolean = cfmlApi.getContextUtils().isPositionScript(document, range.start);
@@ -59,7 +45,7 @@ function createInlineIgnoreRuleFix(document: TextDocument, range: Range, ruleCod
     // prefix disable comment with same indent as line with the diagnostic
     const ruleLine: TextLine = document.lineAt(inlineIgnoreRuleRange.start.line);
     const prefixIndex: number = ruleLine.firstNonWhitespaceCharacterIndex;
-    const prefix: string = ruleLine.text.substr(0, prefixIndex);
+    const prefix: string = ruleLine.text.substring(0, prefixIndex);
     inlineIgnoreRuleText = prefix + inlineIgnoreRuleText;
 
     const ignoreRuleEdit: TextEdit = new TextEdit(inlineIgnoreRuleRange, inlineIgnoreRuleText);
@@ -70,7 +56,7 @@ function createInlineIgnoreRuleFix(document: TextDocument, range: Range, ruleCod
     };
 
     return ignoreRuleAutofix;
-}
+}*/
 
 /**
  * Creates workspace edit for adding an inline ignore rule
@@ -79,14 +65,14 @@ function createInlineIgnoreRuleFix(document: TextDocument, range: Range, ruleCod
  * @param ruleCode The rule code to be ignored
  * @returns
  */
-export function createInlineIgnoreRuleEdit(document: TextDocument, range: Range, ruleCode: string): WorkspaceEdit {
+/*export function createInlineIgnoreRuleEdit(document: TextDocument, range: Range, ruleCode: string): WorkspaceEdit {
     const autofix: AutoFix = createInlineIgnoreRuleFix(document, range, ruleCode);
 
     const workspaceEdit: WorkspaceEdit = new WorkspaceEdit();
     workspaceEdit.set(document.uri, autofix.edits);
 
     return workspaceEdit;
-}
+}*/
 
 /**
  * Creates workspace edit for transforming the case of a word

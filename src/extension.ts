@@ -6,7 +6,7 @@ import { basename, join, delimiter, dirname, parse } from "path";
 import { lt } from "semver";
 import { commands, ConfigurationTarget, Diagnostic, DiagnosticCollection, DocumentFilter, env, ExtensionContext, extensions, languages, OpenDialogOptions,
     StatusBarAlignment, StatusBarItem, TextDocument, TextDocumentChangeEvent, TextEditor, Uri, window, workspace, WorkspaceConfiguration, OutputChannel, FileType } from "vscode";
-import { CFMLApiV0 } from "../typings/cfmlApi";
+import { CFMLEditorApi } from "../typings/cfmlApi";
 import CFLintCodeActionProvider from "./codeActions";
 import { addConfigRuleExclusion, CONFIG_FILENAME, createCwdConfig, createRootConfig, getConfigFilePath, showActiveConfig, showRootConfig } from "./config";
 import { createDiagnostics } from "./diagnostics";
@@ -24,7 +24,7 @@ const httpSuccessStatusCode = 200;
 
 export let extensionContext: ExtensionContext;
 export let outputChannel: OutputChannel;
-export let cfmlApi: CFMLApiV0;
+export let cfmlApi: CFMLEditorApi;
 
 export const LANGUAGE_IDS = ["cfml"];
 const DOCUMENT_SELECTOR: DocumentFilter[] = [];
@@ -848,13 +848,14 @@ export async function activate(context: ExtensionContext): Promise<void> {
         cfmlExt = extensions.getExtension("KamasamaK.vscode-cfml");
     }
 
+
     if (cfmlExt && !cfmlExt.isActive) {
         await cfmlExt.activate();
     }
 
     try {
-        if ( cfmlApi && cfmlExt.exports ) {
-            cfmlApi = cfmlExt.exports.getAPI(0);
+        if ( cfmlExt && cfmlExt.exports ) {
+            cfmlApi = cfmlExt.exports;
         } else {
             cfmlApi = null;
         }
@@ -876,12 +877,14 @@ export async function activate(context: ExtensionContext): Promise<void> {
             return;
         }
 
-        if (cfmlApi && cfmlApi?.isBulkCaching()) {
-            return;
+        if (cfmlApi ) {
+            const bulkCaching = cfmlApi.isBulkCaching();
+            if ( bulkCaching ) {
+                return;
+            }
         }
 
         // TODO: See https://github.com/Microsoft/vscode/issues/15178 for getting opened editors.
-
         lintDocument(document);
     }));
 
