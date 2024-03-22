@@ -317,6 +317,7 @@
         "rebuild": "npm run clean && npm run build",
         "watch": "tsc -watch -p ./",
         "pack": "vsce package",
+		"publish": "vsce publish",
         "lint": "eslint -c .eslintrc.js --ext .ts src/*.ts",
         "vscode:prepublish": "npm run build"
     },
