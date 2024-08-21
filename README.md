@@ -3,6 +3,7 @@
 
 [![Open VSX](https://img.shields.io/open-vsx/v/cfmleditor/cfmleditor-lint)](https://open-vsx.org/extension/cfmleditor/cfmleditor-lint)
 [![cfml](https://img.shields.io/badge/cfml-ide-blue.svg?logo=slack&labelColor=555555)](https://cfml-slack.herokuapp.com)
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/garetheddies)
 
 **CFLint** is a linter for CFML and you can find more information at its [GitHub repository](https://github.com/cflint/CFLint). This extension integrates **CFLint** into VS Code.
 
