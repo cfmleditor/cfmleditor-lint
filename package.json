@@ -2,13 +2,15 @@
     "name": "cfmleditor-lint",
     "displayName": "CFML Editor Linter",
     "description": "CFML Editor Linter for Visual Studio Code",
-    "version": "0.4.3",
+    "version": "0.4.4",
     "author": "cfmleditor",
     "publisher": "cfmleditor",
     "license": "MIT",
-    "extensionDependencies": ["cfmleditor.cfmleditor"],
+    "extensionDependencies": [
+        "cfmleditor.cfmleditor"
+    ],
     "engines": {
-        "vscode": "^1.85.0"
+        "vscode": "^1.92.0"
     },
     "repository": {
         "type": "git",
@@ -318,33 +320,33 @@
         "rebuild": "npm run clean && npm run build",
         "watch": "tsc -watch -p ./",
         "pack": "vsce package",
-		"publish": "vsce publish",
+        "publish": "vsce publish",
         "lint": "eslint -c .eslintrc.js --ext .ts src/*.ts",
         "vscode:prepublish": "npm run build"
     },
     "dependencies": {
-        "@octokit/rest": "^20.0.2",
+        "@octokit/rest": "^21.0.2",
         "change-case-all": "^2.1.0",
         "findup-sync": "5.0.0",
-        "micromatch": "4.0.5",
-        "semver": "^7.6.0"
+        "micromatch": "^4.0.8",
+        "semver": "^7.6.3"
     },
     "devDependencies": {
-        "@types/findup-sync": "4.0.4",
-        "@types/micromatch": "4.0.6",
-        "@types/mocha": "^10.0.6",
-        "@types/node": "~18.15.10",
+        "@types/findup-sync": "4.0.5",
+        "@types/micromatch": "4.0.9",
+        "@types/mocha": "^10.0.7",
+        "@types/node": "~20.10.8",
         "@types/semver": "~7.5.8",
-        "@types/vscode": "~1.85.0",
-        "@typescript-eslint/eslint-plugin": "^7.3.1",
-        "@typescript-eslint/parser": "^7.3.1",
-        "@vscode/test-electron": "^2.3.9",
-		"@vscode/test-web": "^0.0.52",
-		"@vscode/vsce": "^2.23.0",
-        "eslint": "^8.56.0",
-        "eslint-plugin-jsdoc": "^48.1.0",
-        "mocha": "^10.3.0",
-        "rimraf": "^5.0.5",
-        "typescript": "^5.4.3"
+        "@types/vscode": "~1.92.0",
+        "@typescript-eslint/eslint-plugin": "^8.3.0",
+        "@typescript-eslint/parser": "^8.3.0",
+        "@vscode/test-electron": "^2.4.1",
+        "@vscode/test-web": "^0.0.57",
+        "@vscode/vsce": "^3.0.0",
+        "eslint": "^9.9.1",
+        "eslint-plugin-jsdoc": "^50.2.2",
+        "mocha": "^10.7.3",
+        "rimraf": "^6.0.1",
+        "typescript": "^5.5.4"
     }
 }

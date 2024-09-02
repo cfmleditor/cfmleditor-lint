@@ -2,6 +2,10 @@
 
 All notable changes to the VS Code cfmleditor-lint extension will be documented in this file.
 
+## [0.4.4] - 2024-09-02
+
+- Update Dependencies
+
 ## [0.3.6] - 2022-04-16
 
 - Add Workspace Trust support
