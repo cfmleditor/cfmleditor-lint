@@ -1,4 +1,4 @@
-import { Octokit } from "@octokit/rest";
+// import { Octokit } from "@octokit/rest";
 import { ChildProcess, spawn } from "child_process";
 import { existsSync, statSync } from "fs";
 import { some } from "micromatch";
@@ -15,12 +15,12 @@ import { ThrottledDelayer } from "./utils/async";
 import { getCurrentDateTimeFormatted } from "./utils/dateUtil";
 import { fileExists } from "./utils/fileUtils";
 
-const octokit = new Octokit();
-const gitRepoInfo = {
-    owner: "cflint",
-    repo: "CFLint"
-};
-const httpSuccessStatusCode = 200;
+// const octokit = new Octokit();
+// const gitRepoInfo = {
+//     owner: "cflint",
+//     repo: "CFLint"
+// };
+// const httpSuccessStatusCode = 200;
 
 export let extensionContext: ExtensionContext;
 export let outputChannel: OutputChannel;
@@ -54,7 +54,7 @@ let runningLints: Map<Uri, ChildProcess>;
 let queuedLints: Map<Uri, TextDocument>;
 let statusBarItem: StatusBarItem;
 let cflintState: State;
-let rulesLastRetrieved: Date;
+// let rulesLastRetrieved: Date;
 
 interface RunModes {
     onOpen: boolean;
@@ -628,9 +628,9 @@ async function notifyForMinimumVersion(): Promise<void> {
 
 /**
  * Checks for newer version of CFLint
- * @param currentVersion The current version of CFLint being used
+ * @param _currentVersion The current version of CFLint being used
  */
-async function checkForLatestRelease(currentVersion: string): Promise<void> {
+async function checkForLatestRelease(_currentVersion: string): Promise<void> {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings();
     const notifyLatestVersion = cflintSettings.get("notify.latestVersion", true);
 
@@ -638,27 +638,27 @@ async function checkForLatestRelease(currentVersion: string): Promise<void> {
         return;
     }
 
-    const latestReleaseResult = await octokit.repos.getLatestRelease({ owner: gitRepoInfo.owner, repo: gitRepoInfo.repo });
+    // const latestReleaseResult = await octokit.repos.getLatestRelease({ owner: gitRepoInfo.owner, repo: gitRepoInfo.repo });
 
-    if (latestReleaseResult?.status === httpSuccessStatusCode && lt(currentVersion, latestReleaseResult.data.tag_name.replace(/[^\d]*/, ""))) {
-        notifyForLatestRelease(latestReleaseResult.data.tag_name);
-    }
+    // if (latestReleaseResult?.status === httpSuccessStatusCode && lt(currentVersion, latestReleaseResult.data.tag_name.replace(/[^\d]*/, ""))) {
+    //     notifyForLatestRelease(latestReleaseResult.data.tag_name);
+    // }
 }
 
 /**
  * Displays a notification message informing of a newer version of CFLint
  * @param tagName The Git tag name for the latest release of CFLint
  */
-async function notifyForLatestRelease(tagName: string): Promise<void> {
-    // Provide option to disable cflint.notify.latestVersion?
-    window.showInformationMessage(`There is a newer release of CFLint available: ${tagName}`, "Download").then(
-        (selection: string) => {
-            if (selection === "Download") {
-                showCFLintReleases();
-            }
-        }
-    );
-}
+// async function notifyForLatestRelease(tagName: string): Promise<void> {
+//     // Provide option to disable cflint.notify.latestVersion?
+//     window.showInformationMessage(`There is a newer release of CFLint available: ${tagName}`, "Download").then(
+//         (selection: string) => {
+//             if (selection === "Download") {
+//                 showCFLintReleases();
+//             }
+//         }
+//     );
+// }
 
 /**
  * Processes CFLint output into Diagnostics
@@ -694,28 +694,28 @@ function cfLintResult(document: TextDocument, output: string): void {
 async function showRuleDocumentation(_ruleId?: string): Promise<void> {
     const cflintRulesFileName = "RULES.md";
     const cflintRulesUri = Uri.joinPath(extensionContext.extensionUri, "resources", cflintRulesFileName);
-    const millisecondsInHour = 3600000;
+    // const millisecondsInHour = 3600000;
 
-    if (!rulesLastRetrieved || (Date.now() - rulesLastRetrieved.getTime()) < millisecondsInHour) {
-        try {
-            const cflintRulesResult = await octokit.repos.getContent({
-                owner: gitRepoInfo.owner,
-                repo: gitRepoInfo.repo,
-                path: cflintRulesFileName
-            });
+    // if (!rulesLastRetrieved || (Date.now() - rulesLastRetrieved.getTime()) < millisecondsInHour) {
+    //     try {
+    //         const cflintRulesResult = await octokit.repos.getContent({
+    //             owner: gitRepoInfo.owner,
+    //             repo: gitRepoInfo.repo,
+    //             path: cflintRulesFileName
+    //         });
 
-            if (cflintRulesResult?.status === httpSuccessStatusCode && !Array.isArray(cflintRulesResult.data) && cflintRulesResult.data.type === "file") {
-                const result = Buffer.from(cflintRulesResult.data["content"], cflintRulesResult.data["encoding"] as BufferEncoding);
+    //         if (cflintRulesResult?.status === httpSuccessStatusCode && !Array.isArray(cflintRulesResult.data) && cflintRulesResult.data.type === "file") {
+    //             const result = Buffer.from(cflintRulesResult.data["content"], cflintRulesResult.data["encoding"] as BufferEncoding);
 
-                await workspace.fs.writeFile(cflintRulesUri, result);
+    //             await workspace.fs.writeFile(cflintRulesUri, result);
 
-                rulesLastRetrieved = new Date();
-            }
-        } catch (err) {
-            // window.showErrorMessage(`There was a problem showing the rule documentation. ${err.message}`);
-            console.error(err);
-        }
-    }
+    //             rulesLastRetrieved = new Date();
+    //         }
+    //     } catch (err) {
+    //         // window.showErrorMessage(`There was a problem showing the rule documentation. ${err.message}`);
+    //         console.error(err);
+    //     }
+    // }
 
     commands.executeCommand("markdown.showPreview", cflintRulesUri);
 }
