@@ -2,7 +2,7 @@
     "name": "cfmleditor-lint",
     "displayName": "CFML Editor Linter",
     "description": "CFML Editor Linter for Visual Studio Code",
-    "version": "0.4.5",
+    "version": "0.4.6",
     "author": "cfmleditor",
     "publisher": "cfmleditor",
     "license": "MIT",
@@ -325,7 +325,7 @@
         "vscode:prepublish": "npm run build"
     },
     "dependencies": {
-        "@octokit/rest": "^20.0.2",
+        "@octokit/rest": "^21.1.0",
         "change-case-all": "^2.1.0",
         "findup-sync": "5.0.0",
         "micromatch": "^4.0.8",
