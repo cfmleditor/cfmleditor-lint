@@ -2,6 +2,11 @@
 
 All notable changes to the VS Code cfmleditor-lint extension will be documented in this file.
 
+## [0.4.6] - 2025-02-21
+
+- Update packages
+- Update lint / fix lint rules
+
 ## [0.4.5] - 2024-09-18
 
 - Fix 'Update Dependencies' regression

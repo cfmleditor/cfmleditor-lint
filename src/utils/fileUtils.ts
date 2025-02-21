@@ -9,6 +9,7 @@ export async function fileExists(fileUri: Uri): Promise<boolean> {
     try {
         await workspace.fs.stat(fileUri);
         return true;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
         return false;
     }

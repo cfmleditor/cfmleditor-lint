@@ -137,6 +137,7 @@ export function parseConfig(configDocument: TextDocument): Config {
     let parsedConfig: Config;
     try {
         parsedConfig = JSON.parse(configDocument.getText());
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (ex) {
         window.showErrorMessage("Unable to parse configuration file.");
     }
@@ -247,7 +248,7 @@ export async function showRootConfig(editor: TextEditor = window.activeTextEdito
         window.showErrorMessage("No config file could be found in the current workspace folder.", "Create Root Config").then(
             async (selection: string) => {
                 if (selection === "Create Root Config") {
-                    createRootConfig(editor);
+                    await createRootConfig(editor);
                 }
             }
         );
@@ -268,7 +269,7 @@ export async function showActiveConfig(editor: TextEditor = window.activeTextEdi
         window.showErrorMessage("No config file is being used for the currently active document.", "Create Root Config").then(
             async (selection: string) => {
                 if (selection === "Create Root Config") {
-                    createRootConfig(editor);
+                    await createRootConfig(editor);
                 }
             }
         );

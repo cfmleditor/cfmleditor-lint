@@ -89,7 +89,7 @@ function isCfmlLanguage(languageId: string): boolean {
 /**
  * Enables linter.
  */
-async function enable(): Promise<void> {
+function enable(): void {
     if (!workspace.workspaceFolders) {
         window.showErrorMessage("CFLint can only be enabled if VS Code is opened on a workspace folder.");
         return;
@@ -102,7 +102,7 @@ async function enable(): Promise<void> {
 /**
  * Disables linter.
  */
-async function disable(): Promise<void> {
+function disable(): void {
     if (!workspace.workspaceFolders) {
         window.showErrorMessage("CFLint can only be disabled if VS Code is opened on a workspace folder.");
         return;
@@ -207,7 +207,7 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
             } else if (checkStats.isDirectory()) {
                 const javaPath: string = join(javaPathSetting, javaBinName);
                 if (existsSync(javaPath)) {
-                    return javaPath;
+                    return Promise.resolve(javaPath);
                 }
             }
         }
@@ -258,6 +258,7 @@ async function jarPathExists(resource: Uri): Promise<boolean> {
     try {
         const jarUri = Uri.file(jarPath);
         return await validateFileUri(jarUri) === "";
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
         return false;
     }
@@ -279,6 +280,7 @@ async function outputPathExists(resource: Uri): Promise<boolean> {
     try {
         const outputUri = Uri.file(outputDirectory);
         return await validateDirectoryUri(outputUri) === "";
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
         return false;
     }
@@ -294,6 +296,7 @@ async function validateFileUri(fileUri: Uri): Promise<string> {
         if ((await workspace.fs.stat(fileUri)).type === FileType.File) {
             return "";
         }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
         // Do nothing
     }
@@ -311,6 +314,7 @@ async function validateDirectoryUri(directoryUri: Uri): Promise<string> {
         if ((await workspace.fs.stat(directoryUri)).type === FileType.Directory) {
             return "";
         }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
         // Do nothing
     }
@@ -352,6 +356,7 @@ function showInvalidJarPathMessage(resource: Uri): void {
                         if (dirPath) {
                             openDialogOptions.defaultUri = Uri.file(dirPath);
                         }
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     } catch (err) {
                         // noop
                     }
@@ -401,6 +406,7 @@ function showInvalidOutputDirectoryMessage(resource: Uri): void {
                         if (dirPath) {
                             openDialogOptions.defaultUri = Uri.file(dirPath);
                         }
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     } catch (err) {
                         // noop
                     }
@@ -439,7 +445,7 @@ async function lintDocument(document: TextDocument): Promise<void> {
         return;
     }
 
-    onLintDocument(document);
+    await onLintDocument(document);
 }
 
 /**
@@ -484,16 +490,16 @@ async function onLintDocument(document: TextDocument): Promise<void> {
             updateState(State.Running);
 
             childProcess.stdout.on("data", (data: Buffer) => {
-                output += data;
+                output += data.toString();
             });
-            childProcess.stdout.on("end", async () => {
+            childProcess.stdout.on("end", () => {
                 if (output?.length > 0) {
-                    cfLintResult(document, output);
+                    void cfLintResult(document, output);
                 }
                 runningLints.delete(document.uri);
                 if (queuedLints.size > 0) {
                     const nextKey: Uri = queuedLints.keys().next().value;
-                    await onLintDocument(queuedLints.get(nextKey));
+                    void onLintDocument(queuedLints.get(nextKey));
                     queuedLints.delete(nextKey);
                 }
                 if (runningLints.size === 0) {
@@ -504,7 +510,7 @@ async function onLintDocument(document: TextDocument): Promise<void> {
 
         childProcess.on("error", (err: Error) => {
             window.showErrorMessage(`There was a problem with CFLint. ${err.message}`);
-            console.error(`[${getCurrentDateTimeFormatted()}] ${childProcess}`);
+            // console.error(`[${getCurrentDateTimeFormatted()}] ${childProcess}`);
             console.error(`[${getCurrentDateTimeFormatted()}] ${err}`);
         });
     } catch (err) {
@@ -596,7 +602,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
             }
 
             window.showInformationMessage(`Successfully output ${format} file for ${basename(document.fileName)}`, "Open").then(
-                async (selection: string) => {
+                (selection: string) => {
                     if (selection === "Open") {
                         workspace.openTextDocument(Uri.file(fullOutputPath)).then((outputDocument) => window.showTextDocument(outputDocument));
                     }
@@ -607,7 +613,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
 
     childProcess.on("error", (err: Error) => {
         window.showErrorMessage(`There was a problem with CFLint. ${err.message}`);
-        console.error(`[${getCurrentDateTimeFormatted()}] ${childProcess}`);
+        // console.error(`[${getCurrentDateTimeFormatted()}] ${childProcess}`);
         console.error(`[${getCurrentDateTimeFormatted()}] ${err}`);
     });
 }
@@ -616,11 +622,11 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
 /**
  * Displays a notification message recommending an upgrade of CFLint
  */
-async function notifyForMinimumVersion(): Promise<void> {
+function notifyForMinimumVersion(): void {
     window.showErrorMessage(`You must upgrade CFLint to ${minimumCFLintVersion} or higher.`, "Download").then(
-        (selection: string) => {
+        async (selection: string) => {
             if (selection === "Download") {
-                showCFLintReleases();
+                await showCFLintReleases();
             }
         }
     );
@@ -629,14 +635,18 @@ async function notifyForMinimumVersion(): Promise<void> {
 /**
  * Checks for newer version of CFLint
  * @param _currentVersion The current version of CFLint being used
+ * @returns
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function checkForLatestRelease(_currentVersion: string): Promise<void> {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings();
     const notifyLatestVersion = cflintSettings.get("notify.latestVersion", true);
 
     if (!notifyLatestVersion) {
-        return;
+        return Promise.resolve();
     }
+
+    return Promise.resolve();
 
     // const latestReleaseResult = await octokit.repos.getLatestRelease({ owner: gitRepoInfo.owner, repo: gitRepoInfo.repo });
 
@@ -665,14 +675,15 @@ async function checkForLatestRelease(_currentVersion: string): Promise<void> {
  * @param document Document being linted
  * @param output CFLint JSON output
  */
-function cfLintResult(document: TextDocument, output: string): void {
+async function cfLintResult(document: TextDocument, output: string): Promise<void> {
     const parsedOutput = JSON.parse(output);
 
     if (!versionPrompted) {
-        if (!Object.prototype.hasOwnProperty.call(parsedOutput, "version") || lt(parsedOutput.version, minimumCFLintVersion)) {
+        if (!Object.prototype.hasOwnProperty.call(parsedOutput, "version") || lt(parsedOutput.version as string, minimumCFLintVersion)) {
             notifyForMinimumVersion();
         } else {
-            checkForLatestRelease(parsedOutput.version);
+            const version: string = parsedOutput.version;
+            await checkForLatestRelease(version);
         }
 
         versionPrompted = true;
@@ -689,6 +700,7 @@ function cfLintResult(document: TextDocument, output: string): void {
 /**
  * Opens a link that describes the rules.
  * @param _ruleId An optional identifer/code for a particular CFLint rule.
+ * @returns
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function showRuleDocumentation(_ruleId?: string): Promise<void> {
@@ -717,7 +729,7 @@ async function showRuleDocumentation(_ruleId?: string): Promise<void> {
     //     }
     // }
 
-    commands.executeCommand("markdown.showPreview", cflintRulesUri);
+    await commands.executeCommand("markdown.showPreview", cflintRulesUri);
 }
 
 /**
@@ -726,7 +738,7 @@ async function showRuleDocumentation(_ruleId?: string): Promise<void> {
 async function showCFLintReleases(): Promise<void> {
     const cflintReleasesURL = "https://github.com/cflint/CFLint/releases";
     const cflintReleasesUri: Uri = Uri.parse(cflintReleasesURL);
-    env.openExternal(cflintReleasesUri);
+    await env.openExternal(cflintReleasesUri);
 }
 
 /**
@@ -815,6 +827,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         commands.registerCommand("cflint.createRootConfig", createRootConfig),
         commands.registerCommand("cflint.createCwdConfig", createCwdConfig),
         commands.registerCommand("cflint.openRootConfig", showRootConfig),
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         commands.registerTextEditorCommand("cflint.openActiveConfig", showActiveConfig)
     );
 
@@ -823,23 +836,23 @@ export async function activate(context: ExtensionContext): Promise<void> {
             return;
         }
 
-        lintDocument(editor.document);
+        void lintDocument(editor.document);
     }));
 
-    context.subscriptions.push(commands.registerTextEditorCommand("cflint.outputTextFile", async (editor: TextEditor) => {
-        outputLintDocument(editor.document, OutputFormat.Text);
+    context.subscriptions.push(commands.registerTextEditorCommand("cflint.outputTextFile", (editor: TextEditor) => {
+        void outputLintDocument(editor.document, OutputFormat.Text);
     }));
 
-    context.subscriptions.push(commands.registerTextEditorCommand("cflint.outputHtmlFile", async (editor: TextEditor) => {
-        outputLintDocument(editor.document, OutputFormat.Html);
+    context.subscriptions.push(commands.registerTextEditorCommand("cflint.outputHtmlFile", (editor: TextEditor) => {
+        void outputLintDocument(editor.document, OutputFormat.Html);
     }));
 
-    context.subscriptions.push(commands.registerTextEditorCommand("cflint.outputJsonFile", async (editor: TextEditor) => {
-        outputLintDocument(editor.document, OutputFormat.Json);
+    context.subscriptions.push(commands.registerTextEditorCommand("cflint.outputJsonFile", (editor: TextEditor) => {
+        void outputLintDocument(editor.document, OutputFormat.Json);
     }));
 
-    context.subscriptions.push(commands.registerTextEditorCommand("cflint.outputXmlFile", async (editor: TextEditor) => {
-        outputLintDocument(editor.document, OutputFormat.Xml);
+    context.subscriptions.push(commands.registerTextEditorCommand("cflint.outputXmlFile", (editor: TextEditor) => {
+        void outputLintDocument(editor.document, OutputFormat.Xml);
     }));
 
     let cfmlExt = extensions.getExtension("cfmleditor.cfmleditor");
@@ -859,6 +872,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         } else {
             cfmlApi = null;
         }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
         cfmlApi = null;
         // console.error(err);
@@ -885,10 +899,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
         }
 
         // TODO: See https://github.com/Microsoft/vscode/issues/15178 for getting opened editors.
-        lintDocument(document);
+        await lintDocument(document);
     }));
 
-    context.subscriptions.push(workspace.onDidSaveTextDocument((document: TextDocument) => {
+    context.subscriptions.push(workspace.onDidSaveTextDocument(async (document: TextDocument) => {
         const cflintSettings: WorkspaceConfiguration = getCFLintSettings(document.uri);
         const runModes: RunModes = cflintSettings.get("runModes");
 
@@ -896,10 +910,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
             return;
         }
 
-        lintDocument(document);
+        await lintDocument(document);
     }));
 
-    context.subscriptions.push(workspace.onDidChangeTextDocument((evt: TextDocumentChangeEvent) => {
+    context.subscriptions.push(workspace.onDidChangeTextDocument(async (evt: TextDocumentChangeEvent) => {
         const cflintSettings: WorkspaceConfiguration = getCFLintSettings(evt.document.uri);
         const runModes: RunModes = cflintSettings.get("runModes");
         if (!shouldLintDocument(evt.document) || !runModes.onChange) {
@@ -912,6 +926,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
             try {
                 typingDelay = cflintSettings.get<number>("typingDelay");
                 typingDelay = Math.max(typingDelay, minimumTypingDelay);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             } catch (err) {
                 typingDelay = minimumTypingDelay;
             }
@@ -919,7 +934,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
             typingDelayer.set(evt.document.uri, delayer);
         }
 
-        delayer.trigger(async () => {
+        await delayer.trigger(async () => {
             await lintDocument(evt.document);
             typingDelayer.delete(evt.document.uri);
         });

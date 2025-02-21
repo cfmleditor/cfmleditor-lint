@@ -1,5 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-duplicate-type-constituents */
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-magic-numbers, spaced-comment, @typescript-eslint/consistent-type-assertions, @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/explicit-function-return-type */
+
 
 /*
   From https://github.com/microsoft/vscode/blob/main/src/vs/base/common/async.ts circa https://github.com/microsoft/vscode/blob/c635a395496a0699e6c6748d37b974fb4fba18cc/src/vs/base/common/async.ts
