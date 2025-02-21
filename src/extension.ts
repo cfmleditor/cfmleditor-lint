@@ -1,11 +1,10 @@
 // import { Octokit } from "@octokit/rest";
 import { ChildProcess, spawn } from "child_process";
-import { existsSync, statSync } from "fs";
 import { some } from "micromatch";
-import { basename, join, delimiter, dirname, parse } from "path";
 import { lt } from "semver";
 import { commands, ConfigurationTarget, Diagnostic, DiagnosticCollection, DocumentFilter, env, ExtensionContext, extensions, languages, OpenDialogOptions,
-    StatusBarAlignment, StatusBarItem, TextDocument, TextDocumentChangeEvent, TextEditor, Uri, window, workspace, WorkspaceConfiguration, OutputChannel, FileType } from "vscode";
+    StatusBarAlignment, StatusBarItem, TextDocument, TextDocumentChangeEvent, TextEditor, Uri, window, workspace, WorkspaceConfiguration, OutputChannel, FileType,
+    FileStat} from "vscode";
 import { CFMLEditorApi } from "../typings/cfmlApi";
 import CFLintCodeActionProvider from "./codeActions";
 import { addConfigRuleExclusion, CONFIG_FILENAME, createCwdConfig, createRootConfig, getConfigFilePath, showActiveConfig, showRootConfig } from "./config";
@@ -14,6 +13,7 @@ import { CFLintIssueList } from "./issues";
 import { ThrottledDelayer } from "./utils/async";
 import { getCurrentDateTimeFormatted } from "./utils/dateUtil";
 import { fileExists } from "./utils/fileUtils";
+import { Utils } from "vscode-uri";
 
 // const octokit = new Octokit();
 // const gitRepoInfo = {
@@ -195,20 +195,18 @@ function correctJavaBinName(binName: string): string {
  */
 async function findJavaExecutable(resource: Uri): Promise<string> {
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(resource);
-    const javaPathSetting: string = cflintSettings.get<string>("javaPath");
+    const javaPathSetting: Uri = Uri.parse(cflintSettings.get<string>("javaPath"));
     const javaBinName: string = correctJavaBinName("java");
 
     // Start with setting
     if (javaPathSetting) {
-        if (existsSync(javaPathSetting)) {
-            const checkStats = statSync(javaPathSetting);
-            if (checkStats.isFile() && basename(javaPathSetting) === javaBinName) {
-                return javaPathSetting;
-            } else if (checkStats.isDirectory()) {
-                const javaPath: string = join(javaPathSetting, javaBinName);
-                if (existsSync(javaPath)) {
-                    return Promise.resolve(javaPath);
-                }
+        const checkStats: FileStat = await workspace.fs.stat(javaPathSetting);
+        if (checkStats.type === FileType.File && Utils.basename(javaPathSetting) === javaBinName) {
+            return javaPathSetting.fsPath;
+        } else if (checkStats.type === FileType.Directory) {
+            const javaPath: Uri = Uri.joinPath(javaPathSetting, javaBinName);
+            if (await fileExists(javaPath)) {
+                return javaPath.fsPath;
             }
         }
 
@@ -220,21 +218,21 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
     // Then search JAVA_HOME
     const envJavaHome = process.env["JAVA_HOME"];
     if (envJavaHome) {
-        const javaPath = join(envJavaHome, "bin", javaBinName);
+        const javaPath: Uri = Uri.joinPath(Uri.parse(envJavaHome), "bin", javaBinName);
 
-        if (javaPath && existsSync(javaPath)) {
-            return javaPath;
+        if (await fileExists(javaPath)) {
+            return javaPath.fsPath;
         }
     }
 
     // Then search PATH parts
     const envPath = process.env["PATH"];
     if (envPath) {
-        const pathParts: string[] = envPath.split(delimiter);
+        const pathParts: string[] = envPath.split(/[:;]/);
         for (const pathPart of pathParts) {
-            const javaPath: string = join(pathPart, javaBinName);
-            if (existsSync(javaPath)) {
-                return javaPath;
+            const javaPath: Uri = Uri.joinPath(Uri.parse(pathPart), javaBinName);
+            if (await fileExists(javaPath)) {
+                return javaPath.fsPath;
             }
         }
     }
@@ -352,10 +350,8 @@ function showInvalidJarPathMessage(resource: Uri): void {
 
                 if (jarPath) {
                     try {
-                        const dirPath: string = dirname(jarPath);
-                        if (dirPath) {
-                            openDialogOptions.defaultUri = Uri.file(dirPath);
-                        }
+                        const dirPath: Uri = Uri.parse(jarPath);
+                        openDialogOptions.defaultUri = dirPath;
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     } catch (err) {
                         // noop
@@ -402,10 +398,8 @@ function showInvalidOutputDirectoryMessage(resource: Uri): void {
 
                 if (outputDirectory) {
                     try {
-                        const dirPath: string = dirname(outputDirectory);
-                        if (dirPath) {
-                            openDialogOptions.defaultUri = Uri.file(dirPath);
-                        }
+                        const dirPath: Uri = Utils.dirname(Uri.parse(outputDirectory));
+                        openDialogOptions.defaultUri = dirPath;
                     // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     } catch (err) {
                         // noop
@@ -537,7 +531,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
     const cflintSettings: WorkspaceConfiguration = getCFLintSettings(document.uri);
 
     const outputDirectory: string = cflintSettings.get<string>("outputDirectory", "");
-    let outputFileName = `cflint-results-${parse(document.fileName).name}-${Date.now()}`;
+    let outputFileName = `cflint-results-${Utils.basename(document.uri)}-${Date.now()}`;
 
     let fileCommand: string;
     switch (format) {
@@ -563,7 +557,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
             break;
     }
 
-    const fullOutputPath: string = join(outputDirectory, outputFileName);
+    const fullOutputPath: string = Uri.joinPath(Uri.parse(outputDirectory), outputFileName).fsPath;
 
     const javaExecutable: string = await findJavaExecutable(document.uri);
 
@@ -571,7 +565,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
         "-jar",
         cflintSettings.get<string>("jarPath", ""),
         "-stdin",
-        document.fileName,
+        document.uri.fsPath,
         "-q",
         "-e",
         `-${format}`,
@@ -601,7 +595,7 @@ async function outputLintDocument(document: TextDocument, format: OutputFormat =
                 updateState(State.Stopped);
             }
 
-            window.showInformationMessage(`Successfully output ${format} file for ${basename(document.fileName)}`, "Open").then(
+            window.showInformationMessage(`Successfully output ${format} file for ${document.fileName}`, "Open").then(
                 (selection: string) => {
                     if (selection === "Open") {
                         workspace.openTextDocument(Uri.file(fullOutputPath)).then((outputDocument) => window.showTextDocument(outputDocument));
@@ -634,37 +628,35 @@ function notifyForMinimumVersion(): void {
 
 /**
  * Checks for newer version of CFLint
- * @param _currentVersion The current version of CFLint being used
+ * @param currentVersion The current version of CFLint being used
  * @returns
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function checkForLatestRelease(_currentVersion: string): Promise<void> {
-    const cflintSettings: WorkspaceConfiguration = getCFLintSettings();
-    const notifyLatestVersion = cflintSettings.get("notify.latestVersion", true);
 
-    if (!notifyLatestVersion) {
-        return Promise.resolve();
-    }
+// async function checkForLatestRelease(currentVersion: string): Promise<void> {
+//     const cflintSettings: WorkspaceConfiguration = getCFLintSettings();
+//     const notifyLatestVersion = cflintSettings.get("notify.latestVersion", true);
 
-    return Promise.resolve();
+//     if (!notifyLatestVersion) {
+//         return Promise.resolve();
+//     }
 
-    // const latestReleaseResult = await octokit.repos.getLatestRelease({ owner: gitRepoInfo.owner, repo: gitRepoInfo.repo });
+//     const latestReleaseResult = await octokit.repos.getLatestRelease({ owner: gitRepoInfo.owner, repo: gitRepoInfo.repo });
 
-    // if (latestReleaseResult?.status === httpSuccessStatusCode && lt(currentVersion, latestReleaseResult.data.tag_name.replace(/[^\d]*/, ""))) {
-    //     notifyForLatestRelease(latestReleaseResult.data.tag_name);
-    // }
-}
+//     if (latestReleaseResult?.status === httpSuccessStatusCode && lt(currentVersion, latestReleaseResult.data.tag_name.replace(/[^\d]*/, ""))) {
+//         notifyForLatestRelease(latestReleaseResult.data.tag_name);
+//     }
+// }
 
 /**
  * Displays a notification message informing of a newer version of CFLint
  * @param tagName The Git tag name for the latest release of CFLint
  */
-// async function notifyForLatestRelease(tagName: string): Promise<void> {
+// function notifyForLatestRelease(tagName: string): void {
 //     // Provide option to disable cflint.notify.latestVersion?
 //     window.showInformationMessage(`There is a newer release of CFLint available: ${tagName}`, "Download").then(
-//         (selection: string) => {
+//         async (selection: string) => {
 //             if (selection === "Download") {
-//                 showCFLintReleases();
+//                 await showCFLintReleases();
 //             }
 //         }
 //     );
@@ -675,15 +667,15 @@ async function checkForLatestRelease(_currentVersion: string): Promise<void> {
  * @param document Document being linted
  * @param output CFLint JSON output
  */
-async function cfLintResult(document: TextDocument, output: string): Promise<void> {
+function cfLintResult(document: TextDocument, output: string): void {
     const parsedOutput = JSON.parse(output);
 
     if (!versionPrompted) {
         if (!Object.prototype.hasOwnProperty.call(parsedOutput, "version") || lt(parsedOutput.version as string, minimumCFLintVersion)) {
             notifyForMinimumVersion();
         } else {
-            const version: string = parsedOutput.version;
-            await checkForLatestRelease(version);
+            // const version: string = parsedOutput.version;
+            // await checkForLatestRelease(version);
         }
 
         versionPrompted = true;
@@ -702,35 +694,35 @@ async function cfLintResult(document: TextDocument, output: string): Promise<voi
  * @param _ruleId An optional identifer/code for a particular CFLint rule.
  * @returns
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function showRuleDocumentation(_ruleId?: string): Promise<void> {
+
+/* async function showRuleDocumentation(_ruleId?: string): Promise<void> {
     const cflintRulesFileName = "RULES.md";
     const cflintRulesUri = Uri.joinPath(extensionContext.extensionUri, "resources", cflintRulesFileName);
-    // const millisecondsInHour = 3600000;
+    const millisecondsInHour = 3600000;
 
-    // if (!rulesLastRetrieved || (Date.now() - rulesLastRetrieved.getTime()) < millisecondsInHour) {
-    //     try {
-    //         const cflintRulesResult = await octokit.repos.getContent({
-    //             owner: gitRepoInfo.owner,
-    //             repo: gitRepoInfo.repo,
-    //             path: cflintRulesFileName
-    //         });
+    if (!rulesLastRetrieved || (Date.now() - rulesLastRetrieved.getTime()) < millisecondsInHour) {
+        try {
+            const cflintRulesResult = await octokit.repos.getContent({
+                owner: gitRepoInfo.owner,
+                repo: gitRepoInfo.repo,
+                path: cflintRulesFileName
+            });
 
-    //         if (cflintRulesResult?.status === httpSuccessStatusCode && !Array.isArray(cflintRulesResult.data) && cflintRulesResult.data.type === "file") {
-    //             const result = Buffer.from(cflintRulesResult.data["content"], cflintRulesResult.data["encoding"] as BufferEncoding);
+            if (cflintRulesResult?.status === httpSuccessStatusCode && !Array.isArray(cflintRulesResult.data) && cflintRulesResult.data.type === "file") {
+                const result = Buffer.from(cflintRulesResult.data["content"], cflintRulesResult.data["encoding"] as BufferEncoding);
 
-    //             await workspace.fs.writeFile(cflintRulesUri, result);
+                await workspace.fs.writeFile(cflintRulesUri, result);
 
-    //             rulesLastRetrieved = new Date();
-    //         }
-    //     } catch (err) {
-    //         // window.showErrorMessage(`There was a problem showing the rule documentation. ${err.message}`);
-    //         console.error(err);
-    //     }
-    // }
+                rulesLastRetrieved = new Date();
+            }
+        } catch (err) {
+            // window.showErrorMessage(`There was a problem showing the rule documentation. ${err.message}`);
+            console.error(err);
+        }
+    }
 
     await commands.executeCommand("markdown.showPreview", cflintRulesUri);
-}
+} */
 
 /**
  * Opens a link that lists the CFLint releases.
@@ -823,7 +815,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         outputChannel,
         commands.registerCommand("cflint.enable", enable),
         commands.registerCommand("cflint.disable", disable),
-        commands.registerCommand("cflint.viewRulesDoc", showRuleDocumentation),
+        // commands.registerCommand("cflint.viewRulesDoc", showRuleDocumentation),
         commands.registerCommand("cflint.createRootConfig", createRootConfig),
         commands.registerCommand("cflint.createCwdConfig", createCwdConfig),
         commands.registerCommand("cflint.openRootConfig", showRootConfig),
@@ -887,7 +879,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
             return;
         }
 
-        if (!document.uri.path || (basename(document.uri.path) === document.uri.path && !await fileExists(document.uri))) {
+        if (!document.uri.path || (Utils.basename(document.uri) === document.uri.path && !await fileExists(document.uri))) {
             return;
         }
 

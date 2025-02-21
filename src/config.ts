@@ -1,8 +1,7 @@
-import findup from "findup-sync";
-import { dirname } from "path";
 import { Position, Range, TextDocument, Uri, window, workspace, WorkspaceConfiguration, WorkspaceEdit, TextEditor } from "vscode";
 import { getCFLintSettings } from "./extension";
-import { fileExists, writeTextFile } from "./utils/fileUtils";
+import { fileExists, findUpWorkspaceFile, writeTextFile } from "./utils/fileUtils";
+import { Utils } from "vscode-uri";
 
 export const CONFIG_FILENAME = ".cflintrc";
 
@@ -115,8 +114,7 @@ export async function getConfigFilePath(document: TextDocument, fileName: string
         return altConfigFile;
     }
 
-    const currentWorkingDir: string = dirname(document.fileName);
-    const projectConfig: string = findup(fileName, { cwd: currentWorkingDir });
+    const projectConfig: string = (await findUpWorkspaceFile(fileName, document.uri)).fsPath;
     if (projectConfig) {
         return projectConfig;
     }
@@ -288,6 +286,6 @@ export async function showActiveConfig(editor: TextEditor = window.activeTextEdi
  * @returns
  */
 export async function createCwdConfig(editor: TextEditor = window.activeTextEditor): Promise<boolean> {
-    const directory = Uri.file(dirname(editor.document.fileName));
+    const directory = Utils.dirname(editor.document.uri);
     return createDefaultConfiguration(directory);
 }

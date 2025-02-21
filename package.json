@@ -327,9 +327,9 @@
     "dependencies": {
         "@octokit/rest": "^21.1.1",
         "change-case-all": "^2.1.0",
-        "findup-sync": "5.0.0",
         "micromatch": "^4.0.8",
-        "semver": "^7.7.1"
+        "semver": "^7.7.1",
+        "vscode-uri": "^3.1.0"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.2.0",
