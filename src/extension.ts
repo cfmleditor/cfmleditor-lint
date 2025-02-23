@@ -825,18 +825,17 @@ export function activate(context: ExtensionContext): void {
     statusBarItem = window.createStatusBarItem(StatusBarAlignment.Right, 0);
     statusBarItem.text = "CFLint";
 
-    context.subscriptions.push(
-        diagnosticCollection,
-        statusBarItem,
-        outputChannel,
-        commands.registerCommand("cflint.enable", enable),
-        commands.registerCommand("cflint.disable", disable),
-        commands.registerCommand("cflint.viewRulesDoc", showRuleDocumentation),
-        commands.registerCommand("cflint.createRootConfig", createRootConfig),
-        commands.registerCommand("cflint.createCwdConfig", createCwdConfig),
-        commands.registerCommand("cflint.openRootConfig", showRootConfig),
-        commands.registerTextEditorCommand("cflint.openActiveConfig", showActiveConfig)
-    );
+
+    context.subscriptions.push(diagnosticCollection);
+    context.subscriptions.push(statusBarItem);
+    context.subscriptions.push(outputChannel);
+    context.subscriptions.push(commands.registerCommand("cflint.enable", enable));
+    context.subscriptions.push(commands.registerCommand("cflint.disable", disable));
+    context.subscriptions.push(commands.registerCommand("cflint.viewRulesDoc", showRuleDocumentation));
+    context.subscriptions.push(commands.registerCommand("cflint.createRootConfig", createRootConfig));
+    context.subscriptions.push(commands.registerCommand("cflint.createCwdConfig", createCwdConfig));
+    context.subscriptions.push(commands.registerCommand("cflint.openRootConfig", showRootConfig));
+    context.subscriptions.push(commands.registerTextEditorCommand("cflint.openActiveConfig", (editor: TextEditor) => { void showActiveConfig(editor) } ));
 
     context.subscriptions.push(commands.registerTextEditorCommand("cflint.runLinter", (editor: TextEditor) => {
         if (!shouldLintDocument(editor.document)) {
