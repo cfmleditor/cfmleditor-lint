@@ -325,7 +325,7 @@
         "vscode:prepublish": "npm run build"
     },
     "dependencies": {
-        "@octokit/rest": "^21.1.1",
+        "@octokit/rest": "^19.0.13",
         "change-case-all": "^2.1.0",
         "micromatch": "^4.0.8",
         "semver": "^7.7.1",

@@ -4,7 +4,6 @@
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-duplicate-type-constituents */
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 
@@ -399,12 +398,12 @@ export const MicrotaskDelay = Symbol("MicrotaskDelay");
  */
 export class Delayer<T> implements IDisposable {
 
-    private deferred: IScheduledLater | null;
-    private completionPromise: Promise<T> | null;
+    private deferred: IScheduledLater | null | undefined;
+    private completionPromise: Promise<T | null | undefined> | null | undefined;
     // also referred to as onResolve or onSuccess
-    private doResolve: ((value: T | Promise<T> | undefined) => void) | null;
-    private doReject: ((err: any) => void) | null;
-    private task: ITask<T | Promise<T>> | null;
+    private doResolve: ((value: T | Promise<T | null | undefined> | null | undefined) => void) | null | undefined;
+    private doReject: ((err: any) => void) | null | undefined;
+    private task: ITask<T | Promise<T| null | undefined>> | null | undefined;
 
     constructor(public defaultDelay: number | typeof MicrotaskDelay) {
         this.deferred = null;
@@ -414,12 +413,12 @@ export class Delayer<T> implements IDisposable {
         this.task = null;
     }
 
-    public trigger(task: ITask<T | Promise<T>>, delay = this.defaultDelay): Promise<T> {
+    public trigger(task: ITask<T | Promise<T | null | undefined>>, delay = this.defaultDelay): Promise<T | null | undefined> {
         this.task = task;
         this.cancelTimeout();
 
         if (!this.completionPromise) {
-            this.completionPromise = new Promise<T>((resolve, reject) => {
+            this.completionPromise = new Promise<T | null | undefined>((resolve, reject) => {
                 this.doResolve = resolve;
                 this.doReject = reject;
             }).then(() => {
@@ -444,7 +443,7 @@ export class Delayer<T> implements IDisposable {
         return this.completionPromise;
     }
 
-    public forceDelivery(): Promise<T> | null {
+    public forceDelivery(): Promise<T | null | undefined> | null | undefined {
         if (!this.completionPromise) {
             return null;
         }
@@ -1149,8 +1148,8 @@ export async function retry<T>(task: ITask<Promise<T>>, delay: number, retries: 
     for (let i = 0; i < retries; i++) {
         try {
             return await task();
-        } catch (error) {
-            lastError = error;
+        } catch (error: unknown) {
+            lastError = error as Error;
 
             await timeout(delay);
         }
@@ -1517,8 +1516,8 @@ export class AsyncIterableObject<T> implements AsyncIterable<T> {
             try {
                 await Promise.resolve(executor(writer));
                 this.resolve();
-            } catch (err) {
-                this.reject(err);
+            } catch (err: unknown) {
+                this.reject(err as Error);
             } finally {
                 writer.emitOne = undefined!;
                 writer.emitMany = undefined!;
@@ -1695,10 +1694,10 @@ export function createCancelableAsyncIterable<T>(callback: (token: CancellationT
             }
             subscription.dispose();
             source.dispose();
-        } catch (err) {
+        } catch (err: unknown) {
             subscription.dispose();
             source.dispose();
-            emitter.reject(err);
+            emitter.reject(err as Error);
         }
     });
 }

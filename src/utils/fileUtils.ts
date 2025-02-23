@@ -25,7 +25,11 @@ export async function fileExists(fileUri: Uri): Promise<boolean> {
 export async function findUpWorkspaceFile(name: string, workingDir: Uri): Promise<Uri | undefined> {
 
     let directory: Uri = Utils.dirname(workingDir);
-    const workspaceDir: WorkspaceFolder = workspace.getWorkspaceFolder(workingDir);
+    const workspaceDir: WorkspaceFolder | undefined = workspace.getWorkspaceFolder(workingDir);
+
+    if ( !workspaceDir )  {
+        return;
+    }
 
 	while (directory) {
 
