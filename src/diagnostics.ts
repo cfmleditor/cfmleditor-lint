@@ -61,7 +61,7 @@ function makeDiagnostic(document: TextDocument, issue: CFLintIssue): Diagnostic 
     const start: Position = new Position(issue.line - 1, issue.column);
     // TODO: Investigate using offset instead
     // const offsetStart: Position = document.positionAt(issue.offset);
-    const wordRange: Range = document.getWordRangeAtPosition(start);
+    const wordRange: Range | undefined = document.getWordRangeAtPosition(start);
     const diagnosticRange: Range = wordRange ?? new Range(start, start);
     const diagnosticTags: DiagnosticTag[] = [];
     // TODO: Include UNUSED_METHOD_ARGUMENT when proper location is provided

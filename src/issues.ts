@@ -1,3 +1,8 @@
+export interface CFLintResult {
+    version: string;
+    issues: CFLintIssueList[];
+}
+
 export interface CFLintIssueList {
     id: string;
     severity: string;

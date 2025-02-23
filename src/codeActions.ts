@@ -17,7 +17,7 @@ export default class CFLintCodeActionProvider implements CodeActionProvider {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public async provideCodeActions(document: TextDocument, _range: Range, context: CodeActionContext, _token: CancellationToken): Promise<CodeAction[]> {
-        const configDocument: TextDocument = await getActiveConfig(document);
+        const configDocument: TextDocument | undefined = await getActiveConfig(document);
         let parsedConfig: Config;
 
         if (configDocument) {
@@ -30,7 +30,7 @@ export default class CFLintCodeActionProvider implements CodeActionProvider {
         }).forEach((diagnostic: Diagnostic) => {
             const ruleCode: string = diagnostic.code as string;
 
-            let caseConvention: string;
+            let caseConvention: string | undefined;
             switch (ruleCode) {
                 case "VAR_INVALID_NAME": case "VAR_ALLCAPS_NAME":
                     caseConvention = "camelCase";
