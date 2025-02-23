@@ -2,14 +2,14 @@
 import { ChildProcess, spawn } from "child_process";
 import { some } from "micromatch";
 import { lt } from "semver";
-import { commands, ConfigurationTarget, Diagnostic, DiagnosticCollection, DocumentFilter, env, ExtensionContext, extensions, languages, OpenDialogOptions,
+import { commands, ConfigurationTarget, Diagnostic, DiagnosticCollection, DocumentFilter, env, ExtensionContext, languages, OpenDialogOptions,
     StatusBarAlignment, StatusBarItem, TextDocument, TextDocumentChangeEvent, TextEditor, Uri, window, workspace, WorkspaceConfiguration, OutputChannel, FileType,
     FileStat} from "vscode";
-import { CFMLEditorApi } from "../typings/cfmlApi";
+// import { CFMLEditorApi } from "../typings/cfmlApi";
 import CFLintCodeActionProvider from "./codeActions";
 import { addConfigRuleExclusion, createCwdConfig, createRootConfig, getConfigFilePath, showActiveConfig, showRootConfig } from "./config";
 import { createDiagnostics } from "./diagnostics";
-import { CFLintIssueList } from "./issues";
+import { CFLintIssueList, CFLintResult } from "./issues";
 import { ThrottledDelayer } from "./utils/async";
 import { getCurrentDateTimeFormatted } from "./utils/dateUtil";
 import { fileExists } from "./utils/fileUtils";
@@ -29,7 +29,7 @@ const httpSuccessStatusCode = 200;
 
 export let extensionContext: ExtensionContext;
 export let outputChannel: OutputChannel;
-export let cfmlApi: CFMLEditorApi | undefined;
+// export let cfmlApi: CFMLEditorApi | undefined;
 
 export const LANGUAGE_IDS = ["cfml"];
 const DOCUMENT_SELECTOR: DocumentFilter[] = [];
@@ -49,8 +49,8 @@ LANGUAGE_IDS.forEach((languageId: string) => {
 });
 
 const settingsSection = "cflint";
-let minimumTypingDelay: number;
-let minimumCooldown: number;
+const minimumTypingDelay: number = 200;
+const minimumCooldown: number = 500;
 
 let diagnosticCollection: DiagnosticCollection;
 let typingDelayer: Map<Uri, ThrottledDelayer<void>>;
@@ -688,10 +688,10 @@ function notifyForLatestRelease(tagName: string): void {
  * @param output CFLint JSON output
  */
 async function cfLintResult(document: TextDocument, output: string): Promise<void> {
-    const parsedOutput = JSON.parse(output);
+    const parsedOutput: CFLintResult = JSON.parse(output) as CFLintResult;
 
     if (!versionPrompted) {
-        if (!Object.prototype.hasOwnProperty.call(parsedOutput, "version") || lt(parsedOutput.version as string, minimumCFLintVersion)) {
+        if (!Object.prototype.hasOwnProperty.call(parsedOutput, "version") || lt(parsedOutput.version, minimumCFLintVersion)) {
             notifyForMinimumVersion();
         } else {
             const version: string = parsedOutput.version;
@@ -806,13 +806,10 @@ function initializeSettings(): void {
  * This method is called when the extension is activated.
  * @param context The context object for this extension.
  */
-export async function activate(context: ExtensionContext): Promise<void> {
+export function activate(context: ExtensionContext): void {
 
 
     console.log(`[${getCurrentDateTimeFormatted()}] cflint is active!`);
-
-    minimumTypingDelay = context.extension.packageJSON.contributes.configuration.properties["cflint.typingDelay"].minimum;
-    minimumCooldown = context.extension.packageJSON.contributes.configuration.properties["cflint.linterCooldown"].minimum;
 
     initializeSettings();
 
@@ -838,7 +835,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
         commands.registerCommand("cflint.createRootConfig", createRootConfig),
         commands.registerCommand("cflint.createCwdConfig", createCwdConfig),
         commands.registerCommand("cflint.openRootConfig", showRootConfig),
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         commands.registerTextEditorCommand("cflint.openActiveConfig", showActiveConfig)
     );
 
@@ -866,29 +862,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
         void outputLintDocument(editor.document, OutputFormat.Xml);
     }));
 
-    let cfmlExt = extensions.getExtension("cfmleditor.cfmleditor");
-
-    if ( !cfmlExt ) {
-        cfmlExt = extensions.getExtension("KamasamaK.vscode-cfml");
-    }
-
-
-    if (cfmlExt && !cfmlExt.isActive) {
-        await cfmlExt.activate();
-    }
-
-    try {
-        if ( cfmlExt && cfmlExt.exports ) {
-            cfmlApi = cfmlExt.exports;
-        } else {
-            cfmlApi = undefined;
-        }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-        cfmlApi = undefined;
-        // console.error(err);
-    }
-
     // TODO: Add command for running linter for all opened CFML files. Needs refactoring. Needs API for opened editors.
 
     context.subscriptions.push(workspace.onDidOpenTextDocument(async (document: TextDocument) => {
@@ -900,13 +873,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
         if (!document.uri.path || (Utils.basename(document.uri) === document.uri.path && !await fileExists(document.uri))) {
             return;
-        }
-
-        if (cfmlApi ) {
-            const bulkCaching = cfmlApi.isBulkCaching();
-            if ( bulkCaching ) {
-                return;
-            }
         }
 
         // TODO: See https://github.com/Microsoft/vscode/issues/15178 for getting opened editors.

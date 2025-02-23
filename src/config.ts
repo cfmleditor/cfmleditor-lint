@@ -137,7 +137,7 @@ export async function getConfigFilePath(document: TextDocument | undefined, file
  * @returns
  */
 export function parseConfig(configDocument: TextDocument): Config {
-    const parsedConfig: Config = JSON.parse(configDocument.getText());
+    const parsedConfig: Config = JSON.parse(configDocument.getText()) as Config;
     return parsedConfig;
 }
 
