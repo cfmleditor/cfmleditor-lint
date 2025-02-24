@@ -34,7 +34,7 @@
         "workspaceContains:**/*.cfml",
         "workspaceContains:**/*.cfc"
     ],
-    "main": "./out/src/extension",
+    "main": "./dist/extension.js",
     "capabilities": {
         "virtualWorkspaces": {
             "supported": false,
@@ -316,16 +316,20 @@
     },
     "scripts": {
         "clean": "rimraf out *.vsix",
-        "build": "tsc -p ./",
+        "build": "npm run check-types && node esbuild.js",
         "rebuild": "npm run clean && npm run build",
-        "watch": "tsc -watch -p ./",
-        "pack": "vsce package",
-        "publish": "vsce publish",
+        "check-types": "tsc --noEmit",
+        "watch": "npm-run-all -p watch:*",
+        "watch:esbuild": "node esbuild.js --watch",
+        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+        "vscode:prepublish": "npm run package",
         "lint": "eslint src",
-        "vscode:prepublish": "npm run build"
+        "package": "npm run check-types && node esbuild.js --production",
+        "pack": "vsce package",
+        "publish": "vsce publish"
     },
     "dependencies": {
-        "@octokit/rest": "^19.0.13",
+        "@octokit/rest": "^21.1.1",
         "change-case-all": "^2.1.0",
         "micromatch": "^4.0.8",
         "semver": "^7.7.1",
@@ -344,9 +348,11 @@
         "@vscode/test-electron": "^2.4.1",
         "@vscode/test-web": "^0.0.66",
         "@vscode/vsce": "^3.2.2",
+        "esbuild": "^0.25.0",
         "eslint": "^9.21.0",
         "eslint-plugin-jsdoc": "^50.6.3",
         "mocha": "^11.1.0n",
+        "npm-run-all": "^4.1.5",
         "rimraf": "^6.0.1",
         "typescript": "^5.7.3"
     }
