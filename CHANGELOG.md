@@ -2,6 +2,11 @@
 
 All notable changes to the VS Code cfmleditor-lint extension will be documented in this file.
 
+## [0.4.7] - 2025-02-25
+
+- Package extension using esbuild to fix issues with ESM vs CJS
+- Update octokit/rest package
+
 ## [0.4.6] - 2025-02-21
 
 - Update packages
