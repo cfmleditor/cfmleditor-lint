@@ -5,7 +5,6 @@ import { lt } from "semver";
 import { commands, ConfigurationTarget, Diagnostic, DiagnosticCollection, DocumentFilter, env, ExtensionContext, languages, OpenDialogOptions,
     StatusBarAlignment, StatusBarItem, TextDocument, TextDocumentChangeEvent, TextEditor, Uri, window, workspace, WorkspaceConfiguration, OutputChannel, FileType,
     FileStat} from "vscode";
-// import { CFMLEditorApi } from "../typings/cfmlApi";
 import CFLintCodeActionProvider from "./codeActions";
 import { addConfigRuleExclusion, createCwdConfig, createRootConfig, getConfigFilePath, showActiveConfig, showRootConfig } from "./config";
 import { createDiagnostics } from "./diagnostics";
@@ -19,7 +18,7 @@ async function activateOctokit() {
     const { Octokit } = await import('@octokit/rest');
     // Your existing code using Octokit
     return new Octokit();
-}
+};
 
 const gitRepoInfo = {
     owner: "cflint",
@@ -29,7 +28,6 @@ const httpSuccessStatusCode = 200;
 
 export let extensionContext: ExtensionContext;
 export let outputChannel: OutputChannel;
-// export let cfmlApi: CFMLEditorApi | undefined;
 
 export const LANGUAGE_IDS = ["cfml"];
 const DOCUMENT_SELECTOR: DocumentFilter[] = [];
@@ -835,7 +833,7 @@ export function activate(context: ExtensionContext): void {
     context.subscriptions.push(commands.registerCommand("cflint.createRootConfig", createRootConfig));
     context.subscriptions.push(commands.registerCommand("cflint.createCwdConfig", createCwdConfig));
     context.subscriptions.push(commands.registerCommand("cflint.openRootConfig", showRootConfig));
-    context.subscriptions.push(commands.registerTextEditorCommand("cflint.openActiveConfig", (editor: TextEditor) => { void showActiveConfig(editor) } ));
+    context.subscriptions.push(commands.registerTextEditorCommand("cflint.openActiveConfig", (editor: TextEditor) => { void showActiveConfig(editor); } ));
 
     context.subscriptions.push(commands.registerTextEditorCommand("cflint.runLinter", (editor: TextEditor) => {
         if (!shouldLintDocument(editor.document)) {

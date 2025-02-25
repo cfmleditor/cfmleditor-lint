@@ -4,6 +4,6 @@
     "recommendations": [
         "dbaeumer.vscode-eslint",
         "DavidAnson.vscode-markdownlint",
-        "eg2.vscode-npm-script"
+        "connor4312.esbuild-problem-matchers"
     ]
 }

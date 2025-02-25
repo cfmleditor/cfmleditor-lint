@@ -1,5 +1,4 @@
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import jsdoc from "eslint-plugin-jsdoc";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
