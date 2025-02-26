@@ -8,6 +8,7 @@
             "ES2021"
         ],
         "strict": true,
+        "strictNullChecks": true,
         "sourceMap": true,
         "alwaysStrict": true,
         "noFallthroughCasesInSwitch": true,
