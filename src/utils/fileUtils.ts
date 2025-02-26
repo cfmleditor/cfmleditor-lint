@@ -7,13 +7,14 @@ import { Utils } from "vscode-uri";
  * @returns
  */
 export async function fileExists(fileUri: Uri): Promise<boolean> {
-    try {
-        await workspace.fs.stat(fileUri);
-        return true;
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (err) {
-        return false;
-    }
+	try {
+		await workspace.fs.stat(fileUri);
+		return true;
+	}
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	catch (err) {
+		return false;
+	}
 }
 
 /**
@@ -23,37 +24,35 @@ export async function fileExists(fileUri: Uri): Promise<boolean> {
  * @returns Uri | undefined
  */
 export async function findUpWorkspaceFile(name: string, workingDir: Uri): Promise<Uri | undefined> {
+	let directory: Uri = Utils.dirname(workingDir);
+	const workspaceDir: WorkspaceFolder | undefined = workspace.getWorkspaceFolder(workingDir);
 
-    let directory: Uri = Utils.dirname(workingDir);
-    const workspaceDir: WorkspaceFolder | undefined = workspace.getWorkspaceFolder(workingDir);
-
-    if ( !workspaceDir )  {
-        return;
-    }
-
-	while (directory) {
-
-        const filePath: Uri = Uri.joinPath(directory, name);
-
-        try {
-            const stats: FileStat = await workspace.fs.stat(filePath);
-            if ( stats.type === FileType.File ) {
-                return filePath;
-            }
-        } catch {
-            /* empty */
-        }
-
-        // Stop at the workspace folder
-        if (directory.fsPath === workspaceDir.uri.fsPath) {
-            break;
-        }
-
-        directory = Utils.joinPath(directory, "../");
-
+	if (!workspaceDir) {
+		return;
 	}
 
-    return undefined;
+	while (directory) {
+		const filePath: Uri = Uri.joinPath(directory, name);
+
+		try {
+			const stats: FileStat = await workspace.fs.stat(filePath);
+			if (stats.type === FileType.File) {
+				return filePath;
+			}
+		}
+		catch {
+			/* empty */
+		}
+
+		// Stop at the workspace folder
+		if (directory.fsPath === workspaceDir.uri.fsPath) {
+			break;
+		}
+
+		directory = Utils.joinPath(directory, "../");
+	}
+
+	return undefined;
 }
 
 /**
@@ -62,8 +61,8 @@ export async function findUpWorkspaceFile(name: string, workingDir: Uri): Promis
  * @returns
  */
 export async function readTextFile(fileUri: Uri): Promise<string> {
-    const readData = await workspace.fs.readFile(fileUri);
-    return Buffer.from(readData).toString("utf8");
+	const readData = await workspace.fs.readFile(fileUri);
+	return Buffer.from(readData).toString("utf8");
 }
 
 /**
@@ -73,5 +72,5 @@ export async function readTextFile(fileUri: Uri): Promise<string> {
  * @returns
  */
 export async function writeTextFile(fileUri: Uri, fileText: string): Promise<void> {
-    return workspace.fs.writeFile(fileUri, Buffer.from(fileText));
+	return workspace.fs.writeFile(fileUri, Buffer.from(fileText));
 }
