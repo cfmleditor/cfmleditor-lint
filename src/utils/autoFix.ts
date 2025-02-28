@@ -2,8 +2,8 @@ import { Range, TextDocument, TextEdit, WorkspaceEdit } from "vscode";
 import { transformTextCase } from "./textUtil";
 
 export interface AutoFix {
-    label: string;
-    edits: TextEdit[];
+	label: string;
+	edits: TextEdit[];
 }
 
 /**
@@ -12,7 +12,7 @@ export interface AutoFix {
  * @returns
  */
 export function constructConfigExcludeRuleLabel(ruleCode: string): string {
-    return `Exclude rule "${ruleCode}" in .cflintrc`;
+	return `Exclude rule "${ruleCode}" in .cflintrc`;
 }
 
 // Inline Rule Fix
@@ -22,9 +22,8 @@ export function constructConfigExcludeRuleLabel(ruleCode: string): string {
  * @returns
  */
 export function constructInlineIgnoreRuleLabel(ruleCode: string): string {
-    return `Ignore rule "${ruleCode}" for this line`;
+	return `Ignore rule "${ruleCode}" for this line`;
 }
-
 
 /**
  * Creates autofix for adding an inline ignore rule
@@ -33,7 +32,7 @@ export function constructInlineIgnoreRuleLabel(ruleCode: string): string {
  * @param ruleCode The rule code to be ignored
  * @returns
  */
-/*function createInlineIgnoreRuleFix(document: TextDocument, range: Range, ruleCode: string): AutoFix {
+/* function createInlineIgnoreRuleFix(document: TextDocument, range: Range, ruleCode: string): AutoFix {
     // TODO: Check for an existing ignored rule for this line
 
     const isScript: boolean = cfmlApi.getContextUtils().isPositionScript(document, range.start);
@@ -56,7 +55,7 @@ export function constructInlineIgnoreRuleLabel(ruleCode: string): string {
     };
 
     return ignoreRuleAutofix;
-}*/
+} */
 
 /**
  * Creates workspace edit for adding an inline ignore rule
@@ -65,14 +64,14 @@ export function constructInlineIgnoreRuleLabel(ruleCode: string): string {
  * @param ruleCode The rule code to be ignored
  * @returns
  */
-/*export function createInlineIgnoreRuleEdit(document: TextDocument, range: Range, ruleCode: string): WorkspaceEdit {
+/* export function createInlineIgnoreRuleEdit(document: TextDocument, range: Range, ruleCode: string): WorkspaceEdit {
     const autofix: AutoFix = createInlineIgnoreRuleFix(document, range, ruleCode);
 
     const workspaceEdit: WorkspaceEdit = new WorkspaceEdit();
     workspaceEdit.set(document.uri, autofix.edits);
 
     return workspaceEdit;
-}*/
+} */
 
 /**
  * Creates workspace edit for transforming the case of a word
@@ -82,13 +81,13 @@ export function constructInlineIgnoreRuleLabel(ruleCode: string): string {
  * @returns
  */
 export function transformCaseRuleEdit(document: TextDocument, range: Range, textCase: string): WorkspaceEdit {
-    const currentWord: string = document.getText(range);
-    const transformedWord: string = transformTextCase(currentWord, textCase);
+	const currentWord: string = document.getText(range);
+	const transformedWord: string = transformTextCase(currentWord, textCase);
 
-    const workspaceEdit: WorkspaceEdit = new WorkspaceEdit();
-    workspaceEdit.replace(document.uri, range, transformedWord);
+	const workspaceEdit: WorkspaceEdit = new WorkspaceEdit();
+	workspaceEdit.replace(document.uri, range, transformedWord);
 
-    return workspaceEdit;
+	return workspaceEdit;
 }
 
 /**
@@ -98,13 +97,13 @@ export function transformCaseRuleEdit(document: TextDocument, range: Range, text
  * @returns
  */
 export function varScopeEdit(document: TextDocument, range: Range): WorkspaceEdit {
-    const currentWord: string = document.getText(range);
-    const varScopedVariable = `var ${currentWord}`;
+	const currentWord: string = document.getText(range);
+	const varScopedVariable = `var ${currentWord}`;
 
-    const workspaceEdit: WorkspaceEdit = new WorkspaceEdit();
-    workspaceEdit.replace(document.uri, range, varScopedVariable);
+	const workspaceEdit: WorkspaceEdit = new WorkspaceEdit();
+	workspaceEdit.replace(document.uri, range, varScopedVariable);
 
-    return workspaceEdit;
+	return workspaceEdit;
 }
 
 /**
@@ -114,13 +113,13 @@ export function varScopeEdit(document: TextDocument, range: Range): WorkspaceEdi
  * @returns
  */
 export function localScopeEdit(document: TextDocument, range: Range): WorkspaceEdit {
-    const currentWord: string = document.getText(range);
-    const localScopedVariable = `local.${currentWord}`;
+	const currentWord: string = document.getText(range);
+	const localScopedVariable = `local.${currentWord}`;
 
-    const workspaceEdit: WorkspaceEdit = new WorkspaceEdit();
-    workspaceEdit.replace(document.uri, range, localScopedVariable);
+	const workspaceEdit: WorkspaceEdit = new WorkspaceEdit();
+	workspaceEdit.replace(document.uri, range, localScopedVariable);
 
-    return workspaceEdit;
+	return workspaceEdit;
 }
 
 // TODO: OUTPUT_ATTR

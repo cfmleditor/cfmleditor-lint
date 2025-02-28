@@ -3,6 +3,7 @@
         "files.trimTrailingWhitespace": false
     },
     "editor.tabSize": 4,
+    "editor.insertSpaces": false,
     "files.exclude": {
         "out": false
     },
@@ -12,5 +13,16 @@
         "out": true
     },
     "typescript.tsc.autoDetect": "off",
-    "typescript.tsdk": "node_modules\\typescript\\lib"
+    "typescript.tsdk": "node_modules\\typescript\\lib",
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit"
+    },
+    "eslint.rules.customizations": [
+		{
+			"rule": "@stylistic/*",
+			"fixable": true,
+			"severity": "off"
+		}
+	]
 }
