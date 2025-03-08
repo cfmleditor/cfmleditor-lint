@@ -1,7 +1,7 @@
 {
     "name": "cfmleditor-lint",
     "displayName": "CFML Editor Linter",
-    "description": "CFML Editor Linter for Visual Studio Code",
+    "description": "CFML Editor Linter",
     "version": "0.4.7",
     "author": "cfmleditor",
     "publisher": "cfmleditor",
@@ -326,10 +326,15 @@
         "lint": "eslint src",
         "package": "npm run check-types && node esbuild.js --production",
         "pack": "vsce package",
-        "publish": "vsce publish"
+        "publish": "vsce publish",
+        "watch:tests": "tsc --build --watch",
+        "build-tests": "tsc --build",
+        "pretest": "npm run build-tests && npm run build ",
+        "test": "vscode-test"
     },
     "dependencies": {
         "@octokit/rest": "^21.1.1",
+        "@vscode/test-cli": "^0.0.10",
         "change-case-all": "^2.1.0",
         "micromatch": "^4.0.8",
         "semver": "^7.7.1",
