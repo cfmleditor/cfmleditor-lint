@@ -13,6 +13,19 @@
 				"${workspaceFolder}/dist/**/*.js"
 			],
 			"preLaunchTask": "${defaultBuildTask}"
-		}
+		},
+        {
+            "name": "Run Unit Tests",
+            "type": "extensionHost",
+            "request": "launch",
+            "testConfiguration": "${workspaceFolder}/.vscode-test.mjs",
+            "args": [
+                "--disable-extensions",
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                "--extensionTestsPath=${workspaceFolder}/out/test",
+            ],
+			"outFiles": ["${workspaceFolder}/out/test/**/*.js"],
+            "preLaunchTask": "npm: watch:tests"
+        }
     ]
 }
