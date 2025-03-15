@@ -533,7 +533,8 @@ async function onLintDocument(document: TextDocument | undefined): Promise<void>
 				output += data.toString();
 			});
 			childProcess.stdout.on("end", () => {
-				outputChannel.appendLine(`${output}`);
+				// For Debugging
+				// outputChannel.appendLine(`${output}`);
 				if (output?.length > 0) {
 					void cfLintResult(document, output);
 				}
