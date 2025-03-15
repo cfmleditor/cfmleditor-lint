@@ -13,6 +13,7 @@ import { getCurrentDateTimeFormatted } from "./utils/dateUtil";
 import { fileExists } from "./utils/fileUtils";
 import { Utils } from "vscode-uri";
 
+const jarFilename: string = "cflint-1.5.6-all.jar";
 async function activateOctokit() {
 	const { Octokit } = await import("@octokit/rest");
 	// Your existing code using Octokit
@@ -254,21 +255,39 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
  * @returns Whether the JAR path in settings is a valid path.
  */
 async function jarPathExists(resource: Uri): Promise<boolean> {
+	return await getJarUri(resource) !== undefined ? true : false;
+}
+
+/**
+ * Checks to see if cflint.jarPath resolves to a valid file path.
+ * @param resource The resource for which to check the settings
+ * @returns Whether the JAR path in settings is a valid path.
+ */
+async function getJarUri(resource: Uri): Promise<Uri | undefined> {
 	const cflintSettings: WorkspaceConfiguration = getCFLintSettings(resource);
 	const jarPath: string = cflintSettings.get<string>("jarPath", "");
 
-	if (!jarPath) {
-		return false;
-	}
-
 	try {
-		const jarUri = Uri.file(jarPath);
-		return await validateFileUri(jarUri) === "";
+		if (jarPath) {
+			const jarUri = Uri.file(jarPath);
+			if (await validateFileUri(jarUri)) {
+				return jarUri;
+			}
+		}
 	}
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	catch (err) {
-		return false;
+	catch (err) { /* empty */ }
+
+	try {
+		const jarUri = Uri.joinPath(extensionContext.extensionUri, "resources", jarFilename);
+		if (await validateFileUri(jarUri)) {
+			return jarUri;
+		}
 	}
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	catch (err) { /* empty */ }
+
+	return undefined;
 }
 
 /**
@@ -299,10 +318,10 @@ async function outputPathExists(resource: Uri): Promise<boolean> {
  * @param fileUri The URI to check validity.
  * @returns Empty string if valid, else an error message.
  */
-async function validateFileUri(fileUri: Uri): Promise<string> {
+async function validateFileUri(fileUri: Uri): Promise<boolean> {
 	try {
 		if ((await workspace.fs.stat(fileUri)).type === FileType.File) {
-			return "";
+			return true;
 		}
 	}
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -310,7 +329,7 @@ async function validateFileUri(fileUri: Uri): Promise<string> {
 		// Do nothing
 	}
 
-	return "This is not a valid file path";
+	return false;
 }
 
 /**
@@ -472,11 +491,16 @@ async function onLintDocument(document: TextDocument | undefined): Promise<void>
 	const cflintSettings: WorkspaceConfiguration = getCFLintSettings(document.uri);
 
 	const javaExecutable: string = await findJavaExecutable(document.uri);
+	const jarPathUri: Uri | undefined = await getJarUri(document.uri);
+
+	if (!jarPathUri) {
+		return;
+	}
 
 	const options = workspace.workspaceFolders?.[0] ? { cwd: workspace.workspaceFolders[0].uri.fsPath } : undefined;
 	const javaArgs: string[] = [
 		"-jar",
-		cflintSettings.get<string>("jarPath", ""),
+		jarPathUri.fsPath,
 		"-stdin",
 		document.fileName,
 		"-q",
@@ -509,6 +533,7 @@ async function onLintDocument(document: TextDocument | undefined): Promise<void>
 				output += data.toString();
 			});
 			childProcess.stdout.on("end", () => {
+				outputChannel.appendLine(`${output}`);
 				if (output?.length > 0) {
 					void cfLintResult(document, output);
 				}
