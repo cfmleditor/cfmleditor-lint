@@ -161,6 +161,12 @@
                     "default": "fallback",
                     "scope": "resource"
                 },
+                "cflint.cflintDebug": {
+                    "description": "Debug output for CFLint.",
+                    "type": "boolean",
+                    "default": false,
+                    "scope": "resource"
+                },
                 "cflint.ignoreInfo": {
                     "description": "Whether to report issues with Info severity as problems.",
                     "type": "boolean",

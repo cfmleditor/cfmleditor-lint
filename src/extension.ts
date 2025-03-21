@@ -509,6 +509,7 @@ async function onLintDocument(document: TextDocument | undefined): Promise<void>
 		"-stdout",
 	];
 
+	const cflintDebug: boolean = cflintSettings.get<boolean>("cflintDebug", false);
 	const altConfigFile: string = cflintSettings.get<string>("altConfigFile.path", "");
 	if (altConfigFile) {
 		const configFile: string | undefined = await getConfigFilePath(document);
@@ -533,9 +534,10 @@ async function onLintDocument(document: TextDocument | undefined): Promise<void>
 				output += data.toString();
 			});
 			childProcess.stdout.on("end", () => {
-				// For Debugging
-				// outputChannel.appendLine(`${output}`);
 				if (output?.length > 0) {
+					if (cflintDebug) {
+						outputChannel.appendLine(`${output}`);
+					}
 					void cfLintResult(document, output);
 				}
 				runningLints.delete(document.uri);
