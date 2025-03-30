@@ -2,9 +2,13 @@
 
 All notable changes to the VS Code cfmleditor-lint extension will be documented in this file.
 
-## [0.4.9] - 2025-03-31
+## [0.4.10] - 2025-03-31
 
 - Prevent spawn process locking up VSCode waiting for promise during CFLint / Java failure
+
+## [0.4.9] - 2025-03-21
+
+- Package CFMLEditor version of CFLint.jar with extension
 
 ## [0.4.8] - 2025-03-11
 
