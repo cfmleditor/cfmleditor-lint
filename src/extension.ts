@@ -522,6 +522,11 @@ async function onLintDocument(document: TextDocument | undefined): Promise<void>
 
 	try {
 		const childProcess: ChildProcess = spawn(javaExecutable, javaArgs, options);
+
+		childProcess.on("close", () => {
+			updateState(State.Stopped);
+		});
+
 		outputChannel.appendLine(`[${getCurrentDateTimeFormatted()}] ${javaExecutable} ${javaArgs.join(" ")}`);
 
 		if (childProcess.pid && childProcess.stdin && childProcess.stdout) {
@@ -561,6 +566,7 @@ async function onLintDocument(document: TextDocument | undefined): Promise<void>
 		});
 	}
 	catch (err) {
+		window.showErrorMessage(`There was a problem with CFLint.`);
 		console.error(err);
 	}
 }
