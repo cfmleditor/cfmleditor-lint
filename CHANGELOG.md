@@ -2,6 +2,10 @@
 
 All notable changes to the VS Code cfmleditor-lint extension will be documented in this file.
 
+## [0.4.11] - 2025-03-31
+
+- Fix potential infinite loop when trying to find a .cflintrc file ( where one doesn't exist )
+
 ## [0.4.10] - 2025-03-31
 
 - Prevent spawn process locking up VSCode waiting for promise during CFLint / Java failure
