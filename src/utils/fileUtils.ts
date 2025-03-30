@@ -25,14 +25,13 @@ export async function fileExists(fileUri: Uri): Promise<boolean> {
  */
 export async function findUpWorkspaceFile(name: string, workingDir: Uri): Promise<Uri | undefined> {
 	let directory: Uri = Utils.dirname(workingDir);
+	let count: number = 0;
 	const workspaceDir: WorkspaceFolder | undefined = workspace.getWorkspaceFolder(workingDir);
-
-	if (!workspaceDir) {
-		return;
-	}
+	const removePathEnding: RegExp = /[\\/]$/gi;
 
 	while (directory) {
 		const filePath: Uri = Uri.joinPath(directory, name);
+		count++;
 
 		try {
 			const stats: FileStat = await workspace.fs.stat(filePath);
@@ -42,10 +41,11 @@ export async function findUpWorkspaceFile(name: string, workingDir: Uri): Promis
 		}
 		catch {
 			/* empty */
+			// break;
 		}
 
 		// Stop at the workspace folder
-		if (directory.fsPath === workspaceDir.uri.fsPath) {
+		if (!workspaceDir || count > 20 || directory.fsPath.replace(removePathEnding, "") === workspaceDir.uri.fsPath.replace(removePathEnding, "")) {
 			break;
 		}
 
