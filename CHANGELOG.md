@@ -2,6 +2,10 @@
 
 All notable changes to the VS Code cfmleditor-lint extension will be documented in this file.
 
+## [0.4.12] - 2025-04-06
+
+- Lower VSCode minimum version to `1.96.0` to support Cursor
+
 ## [0.4.11] - 2025-03-31
 
 - Fix potential infinite loop when trying to find a .cflintrc file ( where one doesn't exist )
