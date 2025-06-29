@@ -2,7 +2,7 @@
 
 All notable changes to the VS Code cfmleditor-lint extension will be documented in this file.
 
-## [0.4.14] - 2025-06-25
+## [0.4.14] - 2025-06-29
 
 - Update packages / dependencies
 
