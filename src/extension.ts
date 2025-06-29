@@ -13,7 +13,7 @@ import { getCurrentDateTimeFormatted } from "./utils/dateUtil";
 import { fileExists } from "./utils/fileUtils";
 import { Utils } from "vscode-uri";
 
-const jarFilename: string = "cflint-1.5.6-all.jar";
+const jarFilename: string = "cflint-1.5.8-all.jar";
 async function activateOctokit() {
 	const { Octokit } = await import("@octokit/rest");
 	// Your existing code using Octokit
