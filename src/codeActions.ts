@@ -1,7 +1,8 @@
-import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, CodeActionProvider, Command, Diagnostic, Range, TextDocument } from "vscode";
+import { CancellationToken, CodeAction, CodeActionContext, CodeActionKind, CodeActionProvider, Command, Diagnostic, Range, TextDocument, WorkspaceConfiguration } from "vscode";
 import { Config, getActiveConfig, parseConfig } from "./config";
 import { CFLINT_DIAGNOSTIC_SOURCE } from "./diagnostics";
-import { constructConfigExcludeRuleLabel, localScopeEdit, transformCaseRuleEdit, varScopeEdit } from "./utils/autoFix";
+import { constructConfigExcludeRuleLabel, constructInlineIgnoreRuleLabel, createInlineIgnoreRuleEdit, localScopeEdit, transformCaseRuleEdit, varScopeEdit } from "./utils/autoFix";
+import { getCFLintSettings } from "./extension";
 
 /**
  * The code action provider class implements code actions for CFLint issues.
@@ -17,6 +18,12 @@ export default class CFLintCodeActionProvider implements CodeActionProvider {
 	 */
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async provideCodeActions(document: TextDocument, _range: Range, context: CodeActionContext, _token: CancellationToken): Promise<CodeAction[]> {
+		const autofixSettings: WorkspaceConfiguration = getCFLintSettings(document.uri, "cflint.autofix");
+		const quickFix_var = autofixSettings.get<boolean>("var", true);
+		const quickFix_local = autofixSettings.get<boolean>("local", true);
+		const quickFix_ignoreLine = autofixSettings.get<boolean>("ignoreLine", true);
+		const quickFix_excludeRule = autofixSettings.get<boolean>("excludeRule", true);
+
 		const configDocument: TextDocument | undefined = await getActiveConfig(document);
 		let parsedConfig: Config;
 
@@ -70,41 +77,56 @@ export default class CFLintCodeActionProvider implements CodeActionProvider {
 				});
 			}
 			else if (ruleCode === "MISSING_VAR") {
-				codeActions.push({
-					title: "Var scope variable",
-					edit: varScopeEdit(document, diagnostic.range),
-					diagnostics: [diagnostic],
-					kind: CodeActionKind.QuickFix,
-				});
+				if (quickFix_var) {
+					codeActions.push({
+						title: "Var scope variable",
+						edit: varScopeEdit(document, diagnostic.range),
+						diagnostics: [diagnostic],
+						kind: CodeActionKind.QuickFix,
+					});
+				}
+
+				if (quickFix_local) {
+					codeActions.push({
+						title: "Local scope variable",
+						edit: localScopeEdit(document, diagnostic.range),
+						diagnostics: [diagnostic],
+						kind: CodeActionKind.QuickFix,
+					});
+				}
+			}
+			else {
+				if (quickFix_ignoreLine) {
+					codeActions.push({
+						title: constructInlineIgnoreRuleLabel(ruleCode, false),
+						edit: createInlineIgnoreRuleEdit(document, diagnostic.range, ruleCode, false),
+						diagnostics: [diagnostic],
+						kind: CodeActionKind.QuickFix,
+					});
+
+					codeActions.push({
+						title: constructInlineIgnoreRuleLabel(ruleCode, true),
+						edit: createInlineIgnoreRuleEdit(document, diagnostic.range, ruleCode, true),
+						diagnostics: [diagnostic],
+						kind: CodeActionKind.QuickFix,
+					});
+				}
+			}
+
+			if (quickFix_excludeRule) {
+				const configExcludeRuleCommand: Command = {
+					title: constructConfigExcludeRuleLabel(ruleCode),
+					command: "_cflint.addConfigIgnoreRule",
+					arguments: [document, ruleCode],
+				};
 
 				codeActions.push({
-					title: "Local scope variable",
-					edit: localScopeEdit(document, diagnostic.range),
+					title: constructConfigExcludeRuleLabel(ruleCode),
+					command: configExcludeRuleCommand,
 					diagnostics: [diagnostic],
 					kind: CodeActionKind.QuickFix,
 				});
 			}
-
-			const configExcludeRuleCommand: Command = {
-				title: constructConfigExcludeRuleLabel(ruleCode),
-				command: "_cflint.addConfigIgnoreRule",
-				arguments: [document, ruleCode],
-			};
-			codeActions.push({
-				title: constructConfigExcludeRuleLabel(ruleCode),
-				command: configExcludeRuleCommand,
-				diagnostics: [diagnostic],
-				kind: CodeActionKind.QuickFix,
-			});
-
-			/*
-            codeActions.push({
-                title: constructInlineIgnoreRuleLabel(ruleCode),
-                edit: createInlineIgnoreRuleEdit(document, diagnostic.range, ruleCode),
-                diagnostics: [diagnostic],
-                kind: CodeActionKind.QuickFix
-            });
-            */
 		});
 
 		return codeActions;

@@ -184,7 +184,32 @@
                     "type": "boolean",
                     "default": true,
                     "scope": "window"
+                },
+                "cflint.quickfix.var": {
+                    "description": "Whether to allow quick fix to add var a variable.",
+                    "type": "boolean",
+                    "default": true,
+                    "scope": "window"
+                },
+                "cflint.quickfix.local": {
+                    "description": "Whether to allow quick fix to add local. to a variable.",
+                    "type": "boolean",
+                    "default": true,
+                    "scope": "window"
+                },
+                "cflint.quickfix.ignoreLine": {
+                    "description": "Whether to allow quick fix to add an ignore line rule.",
+                    "type": "boolean",
+                    "default": false,
+                    "scope": "window"
+                },
+                "cflint.quickfix.excludeRule": {
+                    "description": "Whether to allow quick fix to exclude the rule in the .cflintrc file",
+                    "type": "boolean",
+                    "default": true,
+                    "scope": "window"
                 }
+
             }
         },
         "commands": [
@@ -344,7 +369,9 @@
         "change-case-all": "^2.1.0",
         "micromatch": "^4.0.8",
         "semver": "^7.7.2",
-        "vscode-uri": "^3.1.0"
+        "vscode-uri": "^3.1.0",
+        "vscode-languageserver-textdocument": "^1.0.12",
+		"vscode-languageserver-types": "^3.17.5"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.1",
