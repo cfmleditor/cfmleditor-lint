@@ -2,6 +2,12 @@
 
 All notable changes to the VS Code cfmleditor-lint extension will be documented in this file.
 
+## [0.4.16] - 2025-07-31
+
+- Add CFLint quick fix settings to enable / disable some of the quick fix options
+- Add CFLint quick fix that adds line based ignore comments ( seperate for script and tag, somewhat experimental )
+- Add ability to use `Manually run CFLint on current workspace` with a file glob.
+
 ## [0.4.15] - 2025-07-30
 
 - Update packages / dependencies

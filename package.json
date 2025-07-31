@@ -2,7 +2,7 @@
     "name": "cfmleditor-lint",
     "displayName": "CFML Editor Linter",
     "description": "CFML Editor Linter",
-    "version": "0.4.16-beta1",
+    "version": "0.4.16",
     "author": "cfmleditor",
     "publisher": "cfmleditor",
     "license": "MIT",
