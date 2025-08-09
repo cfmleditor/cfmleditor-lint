@@ -14,7 +14,7 @@ import { fileExists } from "./utils/fileUtils";
 import { Utils } from "vscode-uri";
 import { LSTextDocument } from "./utils/LSTextDocument";
 
-const jarFilename: string = "cflint-1.5.8-all.jar";
+const jarFilename: string = "cflint-1.5.9-all.jar";
 async function activateOctokit() {
 	const { Octokit } = await import("@octokit/rest");
 	// Your existing code using Octokit

@@ -6,7 +6,8 @@
         "rootDir": "src",
         "lib": [
 			"ES2019",
-			"ES2021"
+			"ES2021",
+            "ES2022"
 		],
         "strict": true,
         "strictNullChecks": true,
