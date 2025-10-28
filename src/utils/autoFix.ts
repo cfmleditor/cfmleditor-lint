@@ -137,11 +137,11 @@ export function localScopeEdit(document: TextDocument, range: Range): WorkspaceE
 	const workspaceEdit: WorkspaceEdit = new WorkspaceEdit();
 	workspaceEdit.replace(document.uri, (currentWord === "cfset"
 		? new Range(
-			range.start.line,
-			range.start.character,
-			range.end.line,
-			range.end.character + 1
-		)
+				range.start.line,
+				range.start.character,
+				range.end.line,
+				range.end.character + 1
+			)
 		: range), localScopedVariable);
 
 	return workspaceEdit;

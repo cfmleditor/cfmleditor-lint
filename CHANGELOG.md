@@ -2,6 +2,11 @@
 
 All notable changes to the VS Code cfmleditor-lint extension will be documented in this file.
 
+## [0.4.17] - 2025-10-28
+
+- Update to typescript `5.9.3`
+- Update dependencies
+
 ## [0.4.16] - 2025-07-31
 
 - Add CFLint quick fix settings to enable / disable some of the quick fix options
