@@ -57,6 +57,22 @@ export async function findUpWorkspaceFile(name: string, workingDir: Uri): Promis
 
 /**
  *
+ * @param pathUri
+ * @returns
+ */
+export async function getPathStat(pathUri: Uri): Promise<FileStat | undefined> {
+	let stat: FileStat | undefined;
+	try {
+		stat = await workspace.fs.stat(pathUri);
+	}
+	catch {
+		// Do nothing
+	}
+	return stat;
+}
+
+/**
+ *
  * @param fileUri
  * @returns
  */

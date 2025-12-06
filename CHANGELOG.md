@@ -2,6 +2,11 @@
 
 All notable changes to the VS Code cfmleditor-lint extension will be documented in this file.
 
+## [0.7.0] - 2025-11-16
+
+- Update `cfmleditor` and `cfmleditor-lint` versions to `0.7.x` with the intention of keeping releases in sync
+- Update dependencies
+
 ## [0.4.17] - 2025-10-28
 
 - Update to typescript `5.9.3`

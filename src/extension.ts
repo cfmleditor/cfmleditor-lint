@@ -10,7 +10,7 @@ import { createDiagnostics } from "./diagnostics";
 import { CFLintIssueList, CFLintResult } from "./issues";
 import { ThrottledDelayer } from "./utils/async";
 import { getCurrentDateTimeFormatted } from "./utils/dateUtil";
-import { fileExists } from "./utils/fileUtils";
+import { fileExists, getPathStat } from "./utils/fileUtils";
 import { Utils } from "vscode-uri";
 import { LSTextDocument } from "./utils/LSTextDocument";
 
@@ -222,11 +222,12 @@ async function findJavaExecutable(resource: Uri): Promise<string> {
 
 	// Start with setting
 	if (javaPathSetting) {
-		const checkStats: FileStat = await workspace.fs.stat(javaPathSetting);
-		if (checkStats.type === FileType.File && Utils.basename(javaPathSetting) === javaBinName) {
+		const checkStats: FileStat | undefined = await getPathStat(javaPathSetting);
+
+		if (checkStats && checkStats.type === FileType.File && Utils.basename(javaPathSetting) === javaBinName) {
 			return javaPathSetting.fsPath;
 		}
-		else if (checkStats.type === FileType.Directory) {
+		else if (checkStats && checkStats.type === FileType.Directory) {
 			const javaPath: Uri = Uri.joinPath(javaPathSetting, javaBinName);
 			if (await fileExists(javaPath)) {
 				return javaPath.fsPath;
