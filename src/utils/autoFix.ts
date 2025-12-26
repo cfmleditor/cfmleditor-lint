@@ -65,7 +65,7 @@ function createTagInlineIgnoreRuleFix(document: TextDocument, range: Range, rule
  * @returns
  */
 function createScriptInlineIgnoreRuleFix(document: TextDocument, range: Range, ruleCode: string): TextEdit {
-	const inlineIgnoreRuleText: string = ` // ignore:${ruleCode}`;
+	const inlineIgnoreRuleText: string = ` // cflint ignore:${ruleCode}`;
 
 	const ruleLine: TextLine = document.lineAt(range.end.line);
 	const inlineIgnoreRuleRange: Range = new Range(ruleLine.range.end, ruleLine.range.end);
