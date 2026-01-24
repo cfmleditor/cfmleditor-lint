@@ -1,397 +1,397 @@
 {
-    "name": "cfmleditor-lint",
-    "displayName": "CFML Editor Linter",
-    "description": "CFML Editor Linter",
-    "version": "0.7.0-beta2",
-    "author": "cfmleditor",
-    "publisher": "cfmleditor",
-    "license": "MIT",
-    "extensionDependencies": [
-        "cfmleditor.cfmleditor"
-    ],
-    "engines": {
-        "vscode": "^1.99.3"
+  "name": "cfmleditor-lint",
+  "displayName": "CFML Editor Linter",
+  "description": "CFML Editor Linter",
+  "version": "0.7.0-beta3",
+  "author": "cfmleditor",
+  "publisher": "cfmleditor",
+  "license": "MIT",
+  "extensionDependencies": [
+    "cfmleditor.cfmleditor"
+  ],
+  "engines": {
+    "vscode": "^1.99.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cfmleditor/cfmleditor-lint.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cfmleditor/cfmleditor-lint/issues"
+  },
+  "categories": [
+    "Linters"
+  ],
+  "keywords": [
+    "coldfusion",
+    "cfml",
+    "cflint"
+  ],
+  "icon": "images/icon2x.png",
+  "activationEvents": [
+    "onLanguage:cfml",
+    "workspaceContains:**/*.cfm",
+    "workspaceContains:**/*.cfml",
+    "workspaceContains:**/*.cfc"
+  ],
+  "main": "./dist/extension.js",
+  "capabilities": {
+    "virtualWorkspaces": {
+      "supported": false,
+      "description": "Using CFLint is not possible in virtual workspaces."
     },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/cfmleditor/cfmleditor-lint.git"
-    },
-    "bugs": {
-        "url": "https://github.com/cfmleditor/cfmleditor-lint/issues"
-    },
-    "categories": [
-        "Linters"
-    ],
-    "keywords": [
-        "coldfusion",
-        "cfml",
-        "cflint"
-    ],
-    "icon": "images/icon2x.png",
-    "activationEvents": [
-        "onLanguage:cfml",
-        "workspaceContains:**/*.cfm",
-        "workspaceContains:**/*.cfml",
-        "workspaceContains:**/*.cfc"
-    ],
-    "main": "./dist/extension.js",
-    "capabilities": {
-        "virtualWorkspaces": {
-            "supported": false,
-            "description": "Using CFLint is not possible in virtual workspaces."
-        },
-        "untrustedWorkspaces": {
-            "supported": false,
-            "description": "The extension requires workspace trust because it loads configuration files and code from the workspace and executes it."
-        }
-    },
-    "contributes": {
-        "configuration": {
-            "id": "cflint",
-            "type": "object",
-            "title": "CFLint",
-            "properties": {
-                "cflint.enabled": {
-                    "description": "Controls whether linting is enabled for CFML files.",
-                    "type": "boolean",
-                    "default": true,
-                    "scope": "resource"
-                },
-                "cflint.javaPath": {
-                    "description": "Overrides the Java executable that is used to run CFLint.",
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null,
-                    "scope": "machine-overridable"
-                },
-                "cflint.jarPath": {
-                    "description": "A path to the CFLint standalone JAR file (CFLint-*-all.jar).",
-                    "type": "string",
-                    "default": "",
-                    "scope": "machine-overridable"
-                },
-                "cflint.outputDirectory": {
-                    "description": "A directory in which to place output files when invoking one of the output commands",
-                    "type": "string",
-                    "default": "",
-                    "scope": "resource"
-                },
-                "cflint.exclude": {
-                    "description": "Glob patterns for excluding files and folders. The pattern is based on the workspace folder being the root.",
-                    "type": "array",
-                    "items": {
-                        "description": "A glob pattern for excluding files and folders.",
-                        "type": "string"
-                    },
-                    "default": [],
-                    "scope": "resource"
-                },
-                "cflint.runModes": {
-                    "description": "When to run the linter.",
-                    "type": "object",
-                    "properties": {
-                        "onOpen": {
-                            "type": "boolean",
-                            "default": true,
-                            "description": "Whether to run the linter on opening a CFML file."
-                        },
-                        "onSave": {
-                            "type": "boolean",
-                            "default": true,
-                            "description": "Whether to run the linter on saving a CFML file."
-                        },
-                        "onChange": {
-                            "type": "boolean",
-                            "default": false,
-                            "description": "Whether to run the linter on any change to a CFML file."
-                        }
-                    },
-                    "required": [
-                        "onOpen",
-                        "onSave",
-                        "onChange"
-                    ],
-                    "default": {
-                        "onOpen": true,
-                        "onSave": true,
-                        "onChange": false
-                    },
-                    "scope": "resource"
-                },
-                "cflint.typingDelay": {
-                    "description": "The number of milliseconds to wait for typing to stop until linting. Only valid when runModes.onChange is true.",
-                    "type": "number",
-                    "default": 700,
-                    "minimum": 200,
-                    "scope": "resource"
-                },
-                "cflint.linterCooldown": {
-                    "description": "The minimum number of milliseconds to wait between running the linter on a document.",
-                    "type": "number",
-                    "default": 5000,
-                    "minimum": 500,
-                    "scope": "resource"
-                },
-                "cflint.maxSimultaneousLints": {
-                    "description": "The maximum number of simultaneously running lints.",
-                    "type": "number",
-                    "default": 3,
-                    "minimum": 1,
-                    "scope": "resource"
-                },
-                "cflint.altConfigFile.path": {
-                    "description": "The path to an alternate rule configuration file.",
-                    "type": "string",
-                    "default": "",
-                    "scope": "machine-overridable"
-                },
-                "cflint.altConfigFile.usage": {
-                    "description": "Usage of the rule config file from cflint.altConfigFile.\nfallback: Use only if no rule config is found for document being linted.\nalways: Always use.",
-                    "type": "string",
-                    "enum": [
-                        "fallback",
-                        "always"
-                    ],
-                    "enumDescriptions": [
-                        "Use only if no rule config is found for document being linted",
-                        "Always use"
-                    ],
-                    "default": "fallback",
-                    "scope": "resource"
-                },
-                "cflint.cflintDebug": {
-                    "description": "Debug output for CFLint.",
-                    "type": "boolean",
-                    "default": false,
-                    "scope": "resource"
-                },
-                "cflint.ignoreInfo": {
-                    "description": "Whether to report issues with Info severity as problems.",
-                    "type": "boolean",
-                    "default": false,
-                    "scope": "resource"
-                },
-                "cflint.ignoreWarnings": {
-                    "description": "Whether to report issues with Warning severity as problems.",
-                    "type": "boolean",
-                    "default": false,
-                    "scope": "resource"
-                },
-                "cflint.notify.latestVersion": {
-                    "description": "Whether to notify when there is a newer version available.",
-                    "type": "boolean",
-                    "default": true,
-                    "scope": "window"
-                },
-                "cflint.quickfix.var": {
-                    "description": "Whether to allow quick fix to add var a variable.",
-                    "type": "boolean",
-                    "default": true,
-                    "scope": "window"
-                },
-                "cflint.quickfix.local": {
-                    "description": "Whether to allow quick fix to add local. to a variable.",
-                    "type": "boolean",
-                    "default": true,
-                    "scope": "window"
-                },
-                "cflint.quickfix.ignoreLine": {
-                    "description": "Whether to allow quick fix to add an ignore line rule.",
-                    "type": "boolean",
-                    "default": false,
-                    "scope": "window"
-                },
-                "cflint.quickfix.excludeRule": {
-                    "description": "Whether to allow quick fix to exclude the rule in the .cflintrc file",
-                    "type": "boolean",
-                    "default": true,
-                    "scope": "window"
-                }
-            }
-        },
-        "commands": [
-            {
-                "title": "Enable CFLint for this workspace",
-                "category": "CFLint",
-                "command": "cflint.enable"
-            },
-            {
-                "title": "Disable CFLint for this workspace",
-                "category": "CFLint",
-                "command": "cflint.disable"
-            },
-            {
-                "title": "Manually run CFLint on currently active file",
-                "category": "CFLint",
-                "command": "cflint.runLinter",
-                "icon": "$(run)"
-            },
-            {
-                "title": "Manually run CFLint on current workspace",
-                "category": "CFLint",
-                "command": "cflint.runLinterWorkspace",
-                "icon": "$(run)"
-            },
-            {
-                "title": "Create '.cflintrc' file in the root of the current working directory",
-                "category": "CFLint",
-                "command": "cflint.createRootConfig",
-                "icon": "$(new-file)"
-            },
-            {
-                "title": "Open '.cflintrc' file in the root of the current working directory",
-                "category": "CFLint",
-                "command": "cflint.openRootConfig",
-                "icon": "$(go-to-file)"
-            },
-            {
-                "title": "Create '.cflintrc' file in the current working directory",
-                "category": "CFLint",
-                "command": "cflint.createCwdConfig",
-                "icon": "$(new-file)"
-            },
-            {
-                "title": "Open '.cflintrc' file for currently active document",
-                "category": "CFLint",
-                "command": "cflint.openActiveConfig",
-                "icon": "$(go-to-file)"
-            },
-            {
-                "title": "Clear CFLint problems for active document",
-                "category": "CFLint",
-                "command": "cflint.clearActiveDocumentProblems",
-                "icon": "$(clear-all)"
-            },
-            {
-                "title": "Clear all CFLint problems",
-                "category": "CFLint",
-                "command": "cflint.clearAllProblems",
-                "icon": "$(clear-all)"
-            },
-            {
-                "title": "View CFLint rules documentation",
-                "category": "CFLint",
-                "command": "cflint.viewRulesDoc",
-                "icon": "$(open-preview)"
-            },
-            {
-                "title": "Output CFLint text file for currently active document",
-                "category": "CFLint",
-                "command": "cflint.outputTextFile",
-                "icon": "$(output)"
-            },
-            {
-                "title": "Output CFLint HTML file for currently active document",
-                "category": "CFLint",
-                "command": "cflint.outputHtmlFile",
-                "icon": "$(file-code)"
-            },
-            {
-                "title": "Output CFLint JSON file for currently active document",
-                "category": "CFLint",
-                "command": "cflint.outputJsonFile",
-                "icon": "$(json)"
-            },
-            {
-                "title": "Output CFLint XML file for currently active document",
-                "category": "CFLint",
-                "command": "cflint.outputXmlFile",
-                "icon": "$(file-code)"
-            }
-        ],
-        "menus": {
-            "commandPalette": [
-                {
-                    "command": "cflint.runLinter",
-                    "when": "editorLangId == cfml"
-                },
-                {
-                    "command": "cflint.openActiveConfig",
-                    "when": "editorLangId == cfml"
-                },
-                {
-                    "command": "cflint.clearActiveDocumentProblems",
-                    "when": "editorLangId == cfml"
-                },
-                {
-                    "command": "cflint.outputTextFile",
-                    "when": "editorLangId == cfml"
-                },
-                {
-                    "command": "cflint.outputHtmlFile",
-                    "when": "editorLangId == cfml"
-                },
-                {
-                    "command": "cflint.outputJsonFile",
-                    "when": "editorLangId == cfml"
-                },
-                {
-                    "command": "cflint.outputXmlFile",
-                    "when": "editorLangId == cfml"
-                }
-            ]
-        },
-        "jsonValidation": [
-            {
-                "fileMatch": "cflint-result.json",
-                "url": "./resources/schemas/cflint-result.schema.json"
-            },
-            {
-                "fileMatch": ".cflintrc",
-                "url": "./resources/schemas/.cflintrc.schema.json"
-            }
-        ]
-    },
-    "scripts": {
-        "clean": "rimraf out *.vsix",
-        "build": "npm run check-types && node esbuild.js",
-        "rebuild": "npm run clean && npm run build",
-        "check-types": "tsc --noEmit",
-        "watch": "npm-run-all -p watch:*",
-        "watch:esbuild": "node esbuild.js --watch",
-        "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-        "vscode:prepublish": "npm run package",
-        "lint": "eslint src",
-        "package": "npm run check-types && node esbuild.js --production",
-        "pack": "vsce package",
-        "publish": "vsce publish",
-        "watch:tests": "tsc --build --watch",
-        "build-tests": "tsc --build",
-        "pretest": "npm run build-tests && npm run build ",
-        "test": "vscode-test"
-    },
-    "dependencies": {
-        "@octokit/rest": "^22.0.1",
-        "@vscode/test-cli": "^0.0.12",
-        "change-case-all": "^2.1.0",
-        "micromatch": "^4.0.8",
-        "semver": "^7.7.3",
-        "vscode-languageserver-textdocument": "^1.0.12",
-        "vscode-languageserver-types": "^3.17.5",
-        "vscode-uri": "^3.1.0"
-    },
-    "devDependencies": {
-        "@eslint/eslintrc": "^3.3.3",
-        "@eslint/js": "^9.39.2",
-        "@stylistic/eslint-plugin": "^5.6.1",
-        "@types/micromatch": "4.0.10",
-        "@types/mocha": "^10.0.10",
-        "@types/node": "^24.10.1",
-        "@types/semver": "^7.7.1",
-        "@types/vscode": "^1.99.3",
-        "@typescript-eslint/eslint-plugin": "^8.50.1",
-        "@typescript-eslint/parser": "^8.50.1",
-        "@vscode/test-electron": "^2.5.2",
-        "@vscode/test-web": "^0.0.77",
-        "@vscode/vsce": "^3.7.1",
-        "esbuild": "^0.27.2",
-        "eslint": "^9.39.2",
-        "eslint-plugin-jsdoc": "^61.5.0",
-        "mocha": "^11.7.5",
-        "npm-run-all": "^4.1.5",
-        "rimraf": "^6.1.2",
-        "typescript": "^5.9.3"
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "The extension requires workspace trust because it loads configuration files and code from the workspace and executes it."
     }
+  },
+  "contributes": {
+    "configuration": {
+      "id": "cflint",
+      "type": "object",
+      "title": "CFLint",
+      "properties": {
+        "cflint.enabled": {
+          "description": "Controls whether linting is enabled for CFML files.",
+          "type": "boolean",
+          "default": true,
+          "scope": "resource"
+        },
+        "cflint.javaPath": {
+          "description": "Overrides the Java executable that is used to run CFLint.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "scope": "machine-overridable"
+        },
+        "cflint.jarPath": {
+          "description": "A path to the CFLint standalone JAR file (CFLint-*-all.jar).",
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable"
+        },
+        "cflint.outputDirectory": {
+          "description": "A directory in which to place output files when invoking one of the output commands",
+          "type": "string",
+          "default": "",
+          "scope": "resource"
+        },
+        "cflint.exclude": {
+          "description": "Glob patterns for excluding files and folders. The pattern is based on the workspace folder being the root.",
+          "type": "array",
+          "items": {
+            "description": "A glob pattern for excluding files and folders.",
+            "type": "string"
+          },
+          "default": [],
+          "scope": "resource"
+        },
+        "cflint.runModes": {
+          "description": "When to run the linter.",
+          "type": "object",
+          "properties": {
+            "onOpen": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to run the linter on opening a CFML file."
+            },
+            "onSave": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether to run the linter on saving a CFML file."
+            },
+            "onChange": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether to run the linter on any change to a CFML file."
+            }
+          },
+          "required": [
+            "onOpen",
+            "onSave",
+            "onChange"
+          ],
+          "default": {
+            "onOpen": true,
+            "onSave": true,
+            "onChange": false
+          },
+          "scope": "resource"
+        },
+        "cflint.typingDelay": {
+          "description": "The number of milliseconds to wait for typing to stop until linting. Only valid when runModes.onChange is true.",
+          "type": "number",
+          "default": 700,
+          "minimum": 200,
+          "scope": "resource"
+        },
+        "cflint.linterCooldown": {
+          "description": "The minimum number of milliseconds to wait between running the linter on a document.",
+          "type": "number",
+          "default": 5000,
+          "minimum": 500,
+          "scope": "resource"
+        },
+        "cflint.maxSimultaneousLints": {
+          "description": "The maximum number of simultaneously running lints.",
+          "type": "number",
+          "default": 3,
+          "minimum": 1,
+          "scope": "resource"
+        },
+        "cflint.altConfigFile.path": {
+          "description": "The path to an alternate rule configuration file.",
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable"
+        },
+        "cflint.altConfigFile.usage": {
+          "description": "Usage of the rule config file from cflint.altConfigFile.\nfallback: Use only if no rule config is found for document being linted.\nalways: Always use.",
+          "type": "string",
+          "enum": [
+            "fallback",
+            "always"
+          ],
+          "enumDescriptions": [
+            "Use only if no rule config is found for document being linted",
+            "Always use"
+          ],
+          "default": "fallback",
+          "scope": "resource"
+        },
+        "cflint.cflintDebug": {
+          "description": "Debug output for CFLint.",
+          "type": "boolean",
+          "default": false,
+          "scope": "resource"
+        },
+        "cflint.ignoreInfo": {
+          "description": "Whether to report issues with Info severity as problems.",
+          "type": "boolean",
+          "default": false,
+          "scope": "resource"
+        },
+        "cflint.ignoreWarnings": {
+          "description": "Whether to report issues with Warning severity as problems.",
+          "type": "boolean",
+          "default": false,
+          "scope": "resource"
+        },
+        "cflint.notify.latestVersion": {
+          "description": "Whether to notify when there is a newer version available.",
+          "type": "boolean",
+          "default": true,
+          "scope": "window"
+        },
+        "cflint.quickfix.var": {
+          "description": "Whether to allow quick fix to add var a variable.",
+          "type": "boolean",
+          "default": true,
+          "scope": "window"
+        },
+        "cflint.quickfix.local": {
+          "description": "Whether to allow quick fix to add local. to a variable.",
+          "type": "boolean",
+          "default": true,
+          "scope": "window"
+        },
+        "cflint.quickfix.ignoreLine": {
+          "description": "Whether to allow quick fix to add an ignore line rule.",
+          "type": "boolean",
+          "default": false,
+          "scope": "window"
+        },
+        "cflint.quickfix.excludeRule": {
+          "description": "Whether to allow quick fix to exclude the rule in the .cflintrc file",
+          "type": "boolean",
+          "default": true,
+          "scope": "window"
+        }
+      }
+    },
+    "commands": [
+      {
+        "title": "Enable CFLint for this workspace",
+        "category": "CFLint",
+        "command": "cflint.enable"
+      },
+      {
+        "title": "Disable CFLint for this workspace",
+        "category": "CFLint",
+        "command": "cflint.disable"
+      },
+      {
+        "title": "Manually run CFLint on currently active file",
+        "category": "CFLint",
+        "command": "cflint.runLinter",
+        "icon": "$(run)"
+      },
+      {
+        "title": "Manually run CFLint on current workspace",
+        "category": "CFLint",
+        "command": "cflint.runLinterWorkspace",
+        "icon": "$(run)"
+      },
+      {
+        "title": "Create '.cflintrc' file in the root of the current working directory",
+        "category": "CFLint",
+        "command": "cflint.createRootConfig",
+        "icon": "$(new-file)"
+      },
+      {
+        "title": "Open '.cflintrc' file in the root of the current working directory",
+        "category": "CFLint",
+        "command": "cflint.openRootConfig",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "title": "Create '.cflintrc' file in the current working directory",
+        "category": "CFLint",
+        "command": "cflint.createCwdConfig",
+        "icon": "$(new-file)"
+      },
+      {
+        "title": "Open '.cflintrc' file for currently active document",
+        "category": "CFLint",
+        "command": "cflint.openActiveConfig",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "title": "Clear CFLint problems for active document",
+        "category": "CFLint",
+        "command": "cflint.clearActiveDocumentProblems",
+        "icon": "$(clear-all)"
+      },
+      {
+        "title": "Clear all CFLint problems",
+        "category": "CFLint",
+        "command": "cflint.clearAllProblems",
+        "icon": "$(clear-all)"
+      },
+      {
+        "title": "View CFLint rules documentation",
+        "category": "CFLint",
+        "command": "cflint.viewRulesDoc",
+        "icon": "$(open-preview)"
+      },
+      {
+        "title": "Output CFLint text file for currently active document",
+        "category": "CFLint",
+        "command": "cflint.outputTextFile",
+        "icon": "$(output)"
+      },
+      {
+        "title": "Output CFLint HTML file for currently active document",
+        "category": "CFLint",
+        "command": "cflint.outputHtmlFile",
+        "icon": "$(file-code)"
+      },
+      {
+        "title": "Output CFLint JSON file for currently active document",
+        "category": "CFLint",
+        "command": "cflint.outputJsonFile",
+        "icon": "$(json)"
+      },
+      {
+        "title": "Output CFLint XML file for currently active document",
+        "category": "CFLint",
+        "command": "cflint.outputXmlFile",
+        "icon": "$(file-code)"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "cflint.runLinter",
+          "when": "editorLangId == cfml"
+        },
+        {
+          "command": "cflint.openActiveConfig",
+          "when": "editorLangId == cfml"
+        },
+        {
+          "command": "cflint.clearActiveDocumentProblems",
+          "when": "editorLangId == cfml"
+        },
+        {
+          "command": "cflint.outputTextFile",
+          "when": "editorLangId == cfml"
+        },
+        {
+          "command": "cflint.outputHtmlFile",
+          "when": "editorLangId == cfml"
+        },
+        {
+          "command": "cflint.outputJsonFile",
+          "when": "editorLangId == cfml"
+        },
+        {
+          "command": "cflint.outputXmlFile",
+          "when": "editorLangId == cfml"
+        }
+      ]
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": "cflint-result.json",
+        "url": "./resources/schemas/cflint-result.schema.json"
+      },
+      {
+        "fileMatch": ".cflintrc",
+        "url": "./resources/schemas/.cflintrc.schema.json"
+      }
+    ]
+  },
+  "scripts": {
+    "clean": "rimraf out *.vsix",
+    "build": "npm run check-types && node esbuild.js",
+    "rebuild": "npm run clean && npm run build",
+    "check-types": "tsc --noEmit",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "vscode:prepublish": "npm run package",
+    "lint": "eslint src",
+    "package": "npm run check-types && node esbuild.js --production",
+    "pack": "vsce package",
+    "publish": "vsce publish",
+    "watch:tests": "tsc --build --watch",
+    "build-tests": "tsc --build",
+    "pretest": "npm run build-tests && npm run build ",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "@octokit/rest": "^22.0.1",
+    "@vscode/test-cli": "^0.0.12",
+    "change-case-all": "^2.1.0",
+    "micromatch": "^4.0.8",
+    "semver": "^7.7.3",
+    "vscode-languageserver-textdocument": "^1.0.12",
+    "vscode-languageserver-types": "^3.17.5",
+    "vscode-uri": "^3.1.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.2",
+    "@stylistic/eslint-plugin": "^5.7.1",
+    "@types/micromatch": "4.0.10",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.1",
+    "@types/semver": "^7.7.1",
+    "@types/vscode": "^1.99.3",
+    "@typescript-eslint/eslint-plugin": "^8.53.1",
+    "@typescript-eslint/parser": "^8.50.1",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/test-web": "^0.0.78",
+    "@vscode/vsce": "^3.7.1",
+    "esbuild": "^0.27.2",
+    "eslint": "^9.39.2",
+    "eslint-plugin-jsdoc": "^62.4.0",
+    "mocha": "^11.7.5",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^6.1.2",
+    "typescript": "^5.9.3"
+  }
 }
