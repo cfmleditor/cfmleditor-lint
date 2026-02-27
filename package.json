@@ -381,6 +381,7 @@
     "@types/node": "^24.10.15",
     "@types/semver": "^7.7.1",
     "@types/vscode": "^1.99.3",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
     "@vscode/test-electron": "^2.5.2",
     "@vscode/test-web": "^0.0.78",
