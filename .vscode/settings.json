@@ -1,24 +1,29 @@
+// Place your settings in this file to overwrite default and user settings.
 {
-    "[markdown]": {
-        "files.trimTrailingWhitespace": false
-    },
-    "editor.tabSize": 4,
-    "editor.insertSpaces": false,
-    "files.exclude": {
-        "out": false
-    },
-    "files.trimTrailingWhitespace": true,
-    "mochaExplorer.files": "out/test/**/*.js",
-    "search.exclude": {
-        "out": true
-    },
-    "typescript.tsc.autoDetect": "off",
-    "typescript.tsdk": "node_modules\\typescript\\lib",
-    "editor.formatOnSave": false,
-    "editor.codeActionsOnSave": {
-        "source.fixAll": "explicit"
-    },
-    "eslint.rules.customizations": [
+	"files.exclude": {
+		"out": false // set this to true to hide the "out" folder with the compiled JS files
+	},
+	"search.exclude": {
+		"out": true // set this to false to include "out" folder in search results
+	},
+	"files.trimTrailingWhitespace": true,
+	"[markdown]": {
+		"files.trimTrailingWhitespace": false
+	},
+	"editor.detectIndentation": false,
+	"editor.tabSize": 4,
+	"editor.insertSpaces": false,
+	"js/ts.tsc.autoDetect": "off",
+	"js/ts.tsdk.path": "node_modules\\typescript\\lib",
+	"cSpell.words": [
+		"struct"
+	],
+	"editor.formatOnSave": false,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit",
+		"source.fixAll.ts": "never"
+	},
+	"eslint.rules.customizations": [
 		{
 			"rule": "@stylistic/*",
 			"fixable": true,
